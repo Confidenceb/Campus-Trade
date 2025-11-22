@@ -1,3 +1,4 @@
+
 export enum ListingType {
   BUY = 'BUY',
   SWAP = 'SWAP',
@@ -40,11 +41,31 @@ export interface Listing {
   category: Category;
   condition: Condition;
   sellerName: string;
-  contactInfo: string; // Phone or Email
-  whatsappNumber?: string; // Specific for WhatsApp
+  contactInfo: string; // Hidden in UI, used for backend ref
   imageUrl: string;
   createdAt: Date;
   status: ListingStatus;
+}
+
+export interface Message {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: Date;
+  isSystemMessage?: boolean; // For warnings or automated updates
+}
+
+export interface Conversation {
+  id: string;
+  listingId: string;
+  listingTitle: string;
+  listingImage: string;
+  participants: string[]; // User IDs
+  otherUserName: string;
+  lastMessage: string;
+  lastMessageDate: Date;
+  unreadCount: number;
+  messages: Message[];
 }
 
 export interface Review {
@@ -82,4 +103,5 @@ export interface User {
   rating?: number;
   reviews?: Review[];
   notifications?: Notification[];
+  conversations?: Conversation[];
 }

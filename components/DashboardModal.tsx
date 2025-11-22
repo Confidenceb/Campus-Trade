@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { X, LayoutDashboard, Heart, List, Trash2, CheckCircle, Eye, MousePointer2, AlertCircle } from 'lucide-react';
-import { Listing, ListingStatus, User } from '../types';
+import React, { useState, useEffect } from 'react';
+import { X, LayoutDashboard, Heart, List, Trash2, CheckCircle, Eye, MousePointer2, AlertCircle, MessageCircle } from 'lucide-react';
+import { Listing, ListingStatus, User, Conversation } from '../types';
 import { ListingCard } from './ListingCard';
 import { Button } from './Button';
 
@@ -10,8 +10,10 @@ interface DashboardModalProps {
   currentUser: User;
   myListings: Listing[];
   savedListings: Listing[];
+  conversations?: Conversation[];
   onDeleteListing: (id: string) => void;
   onMarkAsSold: (id: string) => void;
+  onOpenChat?: (conversationId: string) => void;
 }
 
 export const DashboardModal: React.FC<DashboardModalProps> = ({
@@ -20,10 +22,22 @@ export const DashboardModal: React.FC<DashboardModalProps> = ({
   currentUser,
   myListings,
   savedListings,
+  conversations = [],
   onDeleteListing,
-  onMarkAsSold
+  onMarkAsSold,
+  onOpenChat
 }) => {
-  const [activeTab, setActiveTab] = useState<'my_listings' | 'saved'>('my_listings');
+  const [activeTab, setActiveTab] = useState<'my_listings' | 'saved' | 'messages'>('my_listings');
+
+  // Scroll lock
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -67,6 +81,14 @@ export const DashboardModal: React.FC<DashboardModalProps> = ({
                         <Heart className="w-4 h-4 mr-3" />
                         Saved Items
                         <span className="ml-auto bg-gray-200 text-gray-600 py-0.5 px-2 rounded-full text-xs">{savedListings.length}</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('messages')}
+                        className={`w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === 'messages' ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-600 hover:bg-gray-200/50'}`}
+                    >
+                        <MessageCircle className="w-4 h-4 mr-3" />
+                        Messages
+                        <span className="ml-auto bg-indigo-100 text-indigo-700 py-0.5 px-2 rounded-full text-xs font-bold">{conversations.length}</span>
                     </button>
                 </div>
 
@@ -168,6 +190,47 @@ export const DashboardModal: React.FC<DashboardModalProps> = ({
                              <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
                                 <Heart className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                                 <p className="text-gray-500">No saved items yet.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'messages' && (
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-bold text-gray-900">Messages</h3>
+                        {conversations.length > 0 ? (
+                            <div className="space-y-3">
+                                {conversations.map(conv => (
+                                    <div 
+                                        key={conv.id} 
+                                        onClick={() => onOpenChat && onOpenChat(conv.id)}
+                                        className="bg-white p-4 rounded-xl border border-gray-100 hover:bg-indigo-50 cursor-pointer transition-all flex gap-4"
+                                    >
+                                        <img src={conv.listingImage} className="w-12 h-12 rounded-lg object-cover" alt="" />
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start">
+                                                <h4 className="font-bold text-gray-900">{conv.otherUserName}</h4>
+                                                <span className="text-[10px] text-gray-400">{conv.lastMessageDate.toLocaleDateString()}</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 font-medium mb-0.5">{conv.listingTitle}</p>
+                                            <p className={`text-sm truncate ${conv.unreadCount > 0 ? 'font-bold text-gray-900' : 'text-gray-600'}`}>
+                                                {conv.lastMessage}
+                                            </p>
+                                        </div>
+                                        {conv.unreadCount > 0 && (
+                                            <div className="flex items-center">
+                                                <span className="w-5 h-5 bg-indigo-600 rounded-full text-[10px] text-white flex items-center justify-center font-bold">
+                                                    {conv.unreadCount}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                             <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+                                <MessageCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                <p className="text-gray-500">No messages yet.</p>
                             </div>
                         )}
                     </div>

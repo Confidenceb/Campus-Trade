@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, MapPin, Shield, MessageCircle, CheckCircle, Phone, AlertCircle, ChevronRight, Heart, Flag, AlertTriangle, Star, Lock } from 'lucide-react';
+import { X, User, MapPin, Shield, MessageCircle, CheckCircle, AlertCircle, ChevronRight, Heart, Flag, AlertTriangle, Star, Lock } from 'lucide-react';
 import { Listing, ListingType, User as UserType } from '../types';
 import { Button } from './Button';
 
@@ -12,6 +12,8 @@ interface ProductDetailsModalProps {
   isSaved?: boolean;
   onToggleSave?: (id: string) => void;
   onReport?: (id: string) => void;
+  onChat?: (listing: Listing) => void;
+  canClose?: boolean; // Control if Esc key should work (to prevent closing when child modal is open)
 }
 
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ 
@@ -22,47 +24,52 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   onViewSeller,
   isSaved = false,
   onToggleSave,
-  onReport
+  onReport,
+  onChat,
+  canClose = true
 }) => {
-  const [showContactInfo, setShowContactInfo] = useState(false);
-
+  
+  // Scroll lock
   useEffect(() => {
-    setShowContactInfo(false);
+    if (listing) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
   }, [listing]);
 
+  // Handle Esc key with priority check
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && canClose) onClose();
     };
     if (listing) {
       window.addEventListener('keydown', handleEsc);
     }
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [listing, onClose]);
+  }, [listing, onClose, canClose]);
 
   if (!listing) return null;
 
-  const handleContactClick = () => {
+  const handleChatClick = () => {
     if (currentUser?.isVerified) {
-      setShowContactInfo(true);
+      if (onChat) onChat(listing);
     } else {
       onVerifyNeeded();
     }
   };
 
-  const handleWhatsAppClick = () => {
-    if (listing.whatsappNumber) {
-        const message = `Hi, I saw your listing "${listing.title}" on CampusTrade. Is it still available?`;
-        window.open(`https://wa.me/${listing.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
-    }
-  };
-
   const handleSecurePay = () => {
-    alert("Secure Escrow Payment\n\nThis feature simulates holding your funds safely until you receive the item.\n\nIntegration with Paystack/Remita would happen here.");
+    if (!currentUser?.isVerified) {
+        onVerifyNeeded();
+        return;
+    }
+    alert("Secure Escrow Payment\n\nProceeding to secure checkout. Funds will be held until you receive the item.");
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto" onClick={() => canClose && onClose()}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-8 overflow-hidden flex flex-col md:flex-row min-h-[500px] animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
         
         {/* Image Side */}
@@ -181,65 +188,41 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                 {/* Safety Tips */}
                 <div className="bg-orange-50 border border-orange-100 rounded-xl p-4">
                     <h4 className="text-xs font-bold text-orange-800 flex items-center mb-2">
-                        <AlertTriangle className="w-3 h-3 mr-1" /> Safety Tips
+                        <AlertTriangle className="w-3 h-3 mr-1" /> Secure Platform
                     </h4>
-                    <ul className="text-xs text-orange-700 space-y-1 list-disc list-inside">
-                        <li>Meet in open, populated places on campus (e.g., Senate Building, Faculty, Jaja).</li>
-                        <li>Check the item thoroughly before paying.</li>
-                        <li>Avoid paying in advance for items you haven't seen.</li>
-                    </ul>
+                    <p className="text-xs text-orange-700 leading-relaxed">
+                        Payments are held in Escrow. Do not send money directly to the seller. Use the "Make Offer" or "Buy Now" buttons to ensure your funds are protected.
+                    </p>
                 </div>
              </div>
           </div>
 
           {/* Footer Actions */}
           <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-             {showContactInfo ? (
-                <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                        <p className="text-xs font-bold text-emerald-700 uppercase mb-2 flex items-center">
-                            <Phone className="w-3 h-3 mr-1" /> Seller Contact
-                        </p>
-                        <p className="text-xl font-bold text-gray-900 selection:bg-emerald-200 selection:text-emerald-900">
-                            {listing.contactInfo}
-                        </p>
-                    </div>
+             <div className="flex flex-col gap-3">
+                 {/* Main Actions */}
+                 <div className="flex gap-3">
+                    <Button onClick={handleChatClick} variant="outline" className="flex-1 border-gray-300 hover:bg-gray-50 hover:border-indigo-300 hover:text-indigo-600">
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        Chat
+                    </Button>
                     
-                    <div className="flex gap-2">
-                        {listing.whatsappNumber && (
-                            <Button onClick={handleWhatsAppClick} className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-sm">
-                                <MessageCircle className="w-5 h-5 mr-2" />
-                                WhatsApp
-                            </Button>
-                        )}
-                        <Button onClick={handleSecurePay} variant="secondary" className="flex-1">
-                            <Lock className="w-4 h-4 mr-2" />
-                            Safe Pay
-                        </Button>
-                    </div>
-                    <p className="text-[10px] text-center text-gray-400">
-                      SafePay holds your funds in escrow until you confirm receipt.
-                    </p>
-                </div>
-             ) : (
-               <div className="flex flex-col gap-2">
-                 <Button onClick={handleContactClick} className="w-full shadow-lg shadow-indigo-200 relative overflow-hidden" size="lg">
-                   <span className="relative z-10 flex items-center">
-                      <Phone className="w-5 h-5 mr-2" />
-                      Contact Seller
-                   </span>
-                 </Button>
+                    <Button onClick={handleSecurePay} className="flex-1 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+                        <Lock className="w-5 h-5 mr-2" />
+                        {listing.type === ListingType.BUY ? 'Buy Now' : 'Make Offer'}
+                    </Button>
+                 </div>
+
                  {!currentUser?.isVerified && (
                     <p className="text-center text-[10px] text-orange-500 flex items-center justify-center mt-1">
-                      <AlertCircle className="w-3 h-3 mr-1" /> Verification required to view contact
+                      <AlertCircle className="w-3 h-3 mr-1" /> Verification required to make deals
                     </p>
                  )}
-               </div>
-             )}
+             </div>
              
-             <div className="flex justify-between items-center mt-4">
+             <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-200/50">
                  <p className="text-center text-xs text-gray-400 flex items-center">
-                    <CheckCircle className="w-3 h-3 mr-1" /> Safe Trade Guarantee
+                    <CheckCircle className="w-3 h-3 mr-1 text-emerald-500" /> Buyer Protection Active
                  </p>
                  <button onClick={() => onReport && onReport(listing.id)} className="text-xs text-gray-400 hover:text-red-600 flex items-center transition-colors">
                     <Flag className="w-3 h-3 mr-1" /> Report Item

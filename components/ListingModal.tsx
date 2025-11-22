@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wand2, Upload, MessageCircle } from 'lucide-react';
+import { X, Wand2, Upload } from 'lucide-react';
 import { Listing, ListingType, Category, Condition } from '../types';
 import { Button } from './Button';
 import { generateListingDescription } from '../services/gemini';
@@ -24,9 +24,18 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
     swapRequest: '',
     sellerName: '',
     contactInfo: '',
-    whatsappNumber: '',
     imageUrl: `https://picsum.photos/seed/${Math.random()}/400/300`
   });
+
+  // Scroll lock
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -76,7 +85,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
 
   // Tabs configuration
   const tabs = [
-    { id: ListingType.BUY, label: 'Sell Item' }, // Renamed for UX
+    { id: ListingType.BUY, label: 'Sell Item' },
     { id: ListingType.RENT, label: 'Rent Out' },
     { id: ListingType.SWAP, label: 'Swap' }
   ];
@@ -222,22 +231,8 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                <input type="text" name="contactInfo" placeholder="For calls/SMS" value={formData.contactInfo} onChange={handleChange} className={inputBaseClass} />
-              </div>
-              <div className="md:col-span-2">
-                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <MessageCircle className="w-3 h-3 mr-1 text-green-600" />
-                    WhatsApp Number (Optional)
-                 </label>
-                 <input 
-                   type="text" 
-                   name="whatsappNumber" 
-                   placeholder="e.g. 2348123456789 (No + symbol)" 
-                   value={formData.whatsappNumber} 
-                   onChange={handleChange} 
-                   className={inputBaseClass} 
-                  />
-                  <p className="text-[10px] text-gray-500 mt-1">Use international format without the plus (e.g., 234...). Allows buyers to chat you instantly.</p>
+                <input type="text" name="contactInfo" placeholder="For system verification only" value={formData.contactInfo} onChange={handleChange} className={inputBaseClass} />
+                <p className="text-[10px] text-gray-500 mt-1">Your phone number will NOT be shown publicly. It is for admin use only.</p>
               </div>
             </div>
           </div>

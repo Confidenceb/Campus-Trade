@@ -16,6 +16,16 @@ export const KYCModal: React.FC<KYCModalProps> = ({ isOpen, onClose, onVerify })
     level: '',
   });
 
+  // Scroll lock
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
+
   // Handle Escape key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -46,7 +56,7 @@ export const KYCModal: React.FC<KYCModalProps> = ({ isOpen, onClose, onVerify })
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="bg-indigo-600 px-6 py-8 text-center relative">
            <button onClick={onClose} className="absolute top-4 right-4 text-indigo-200 hover:text-white">

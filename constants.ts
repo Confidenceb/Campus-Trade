@@ -1,4 +1,5 @@
-import { Category, Condition, Listing, ListingType, ListingStatus, Notification, Review } from "./types";
+
+import { Category, Condition, Listing, ListingType, ListingStatus, Notification, Review, Conversation } from "./types";
 
 export const MOCK_LISTINGS: Listing[] = [
   {
@@ -11,7 +12,6 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.LIKE_NEW,
     sellerName: 'David O.',
     contactInfo: '08123456789',
-    whatsappNumber: '2348123456789',
     imageUrl: 'https://picsum.photos/seed/calc/400/300',
     createdAt: new Date(),
     status: ListingStatus.AVAILABLE
@@ -27,7 +27,6 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.GOOD,
     sellerName: 'Sarah K.',
     contactInfo: 'sarah.k@student.unilag.edu.ng',
-    whatsappNumber: '2349011223344',
     imageUrl: 'https://picsum.photos/seed/coat/400/300',
     createdAt: new Date(),
     status: ListingStatus.AVAILABLE
@@ -42,7 +41,6 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.GOOD,
     sellerName: 'Emmanuel J.',
     contactInfo: '09087654321',
-    whatsappNumber: '2349087654321',
     imageUrl: 'https://picsum.photos/seed/phone/400/300',
     createdAt: new Date(),
     status: ListingStatus.AVAILABLE
@@ -57,7 +55,6 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.FAIR,
     sellerName: 'Chidinma',
     contactInfo: '07011223344',
-    whatsappNumber: '2347011223344',
     imageUrl: 'https://picsum.photos/seed/book/400/300',
     createdAt: new Date(),
     status: ListingStatus.AVAILABLE
@@ -72,7 +69,6 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.GOOD,
     sellerName: 'Tobi',
     contactInfo: '08099887766',
-    whatsappNumber: '2348099887766',
     imageUrl: 'https://picsum.photos/seed/fridge/400/300',
     createdAt: new Date(),
     status: ListingStatus.SOLD
@@ -142,5 +138,33 @@ export const MOCK_REVIEWS: Review[] = [
     rating: 5,
     comment: 'Saved me so much money on this textbook! Thanks.',
     date: new Date(Date.now() - 86400000 * 10)
+  }
+];
+
+export const MOCK_CONVERSATIONS: Conversation[] = [
+  {
+    id: 'conv1',
+    listingId: '2',
+    listingTitle: 'Medical Lab Coat',
+    listingImage: 'https://picsum.photos/seed/coat/100/100',
+    participants: ['user-123', 'seller-2'],
+    otherUserName: 'Sarah K.',
+    lastMessage: 'Yes, it is available for pickup at Jaja Hall.',
+    lastMessageDate: new Date(Date.now() - 3600000),
+    unreadCount: 1,
+    messages: [
+      {
+        id: 'm1',
+        senderId: 'user-123',
+        text: 'Hi, is this still available for rent tomorrow?',
+        timestamp: new Date(Date.now() - 7200000)
+      },
+      {
+        id: 'm2',
+        senderId: 'seller-2',
+        text: 'Yes, it is available for pickup at Jaja Hall.',
+        timestamp: new Date(Date.now() - 3600000)
+      }
+    ]
   }
 ];
