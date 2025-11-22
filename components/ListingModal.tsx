@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Wand2, Upload } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Wand2, Upload, MessageCircle } from 'lucide-react';
 import { Listing, ListingType, Category, Condition } from '../types';
 import { Button } from './Button';
 import { generateListingDescription } from '../services/gemini';
@@ -7,7 +7,7 @@ import { generateListingDescription } from '../services/gemini';
 interface ListingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (listing: Omit<Listing, 'id' | 'createdAt'>) => void;
+  onSubmit: (listing: Omit<Listing, 'id' | 'createdAt' | 'status'>) => void;
 }
 
 export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onSubmit }) => {
@@ -24,8 +24,19 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
     swapRequest: '',
     sellerName: '',
     contactInfo: '',
-    imageUrl: `https://picsum.photos/seed/${Math.random()}/400/300` // Random seed for placeholder
+    whatsappNumber: '',
+    imageUrl: `https://picsum.photos/seed/${Math.random()}/400/300`
   });
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleEsc);
+    }
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -52,19 +63,27 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Basic validation
     if (!formData.title || !formData.description || !formData.sellerName || !formData.contactInfo) {
       alert("Please fill all required fields");
       return;
     }
 
-    onSubmit(formData as Omit<Listing, 'id' | 'createdAt'>);
+    onSubmit(formData as Omit<Listing, 'id' | 'createdAt' | 'status'>);
     onClose();
   };
 
+  const inputBaseClass = "w-full rounded-lg border-gray-300 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white text-gray-900 placeholder-gray-400 transition-shadow";
+
+  // Tabs configuration
+  const tabs = [
+    { id: ListingType.BUY, label: 'Sell Item' }, // Renamed for UX
+    { id: ListingType.RENT, label: 'Rent Out' },
+    { id: ListingType.SWAP, label: 'Swap' }
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-900">List Item on Unilag Market</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -76,17 +95,17 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
           
           {/* Type Selection */}
           <div className="grid grid-cols-3 gap-4">
-            {Object.values(ListingType).map((type) => (
-              <label key={type} className={`cursor-pointer border rounded-lg p-3 text-center transition-all ${formData.type === type ? 'bg-indigo-50 border-indigo-500 text-indigo-700 font-semibold shadow-sm' : 'hover:bg-gray-50 text-gray-600 border-gray-200'}`}>
+            {tabs.map((tab) => (
+              <label key={tab.id} className={`cursor-pointer border rounded-lg p-3 text-center transition-all ${formData.type === tab.id ? 'bg-indigo-50 border-indigo-500 text-indigo-700 font-semibold shadow-sm ring-1 ring-indigo-500' : 'hover:bg-gray-50 text-gray-600 border-gray-200 bg-white'}`}>
                 <input 
                   type="radio" 
                   name="type" 
-                  value={type} 
-                  checked={formData.type === type} 
+                  value={tab.id} 
+                  checked={formData.type === tab.id} 
                   onChange={handleChange} 
                   className="hidden" 
                 />
-                {type}
+                {tab.label}
               </label>
             ))}
           </div>
@@ -101,7 +120,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. Casio Calculator"
-                className="w-full rounded-lg border-gray-300 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className={inputBaseClass}
               />
             </div>
             
@@ -111,7 +130,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full rounded-lg border-gray-300 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                className={inputBaseClass}
               >
                 {Object.values(Category).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -123,7 +142,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
                 name="condition"
                 value={formData.condition}
                 onChange={handleChange}
-                className="w-full rounded-lg border-gray-300 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                className={inputBaseClass}
               >
                 {Object.values(Condition).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -134,24 +153,24 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
               {formData.type === ListingType.BUY && (
                 <>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Price (₦) *</label>
-                  <input type="number" name="price" value={formData.price} onChange={handleChange} className="w-full rounded-lg border px-3 py-2" />
+                  <input type="number" name="price" value={formData.price} onChange={handleChange} className={inputBaseClass} />
                 </>
               )}
               {formData.type === ListingType.SWAP && (
                 <>
                   <label className="block text-sm font-medium text-gray-700 mb-1">What do you want? *</label>
-                  <input type="text" name="swapRequest" placeholder="e.g. iPhone 7" value={formData.swapRequest} onChange={handleChange} className="w-full rounded-lg border px-3 py-2" />
+                  <input type="text" name="swapRequest" placeholder="e.g. iPhone 7" value={formData.swapRequest} onChange={handleChange} className={inputBaseClass} />
                 </>
               )}
               {formData.type === ListingType.RENT && (
                 <div className="flex gap-2">
                    <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Rate (₦) *</label>
-                    <input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} className="w-full rounded-lg border px-3 py-2" />
+                    <input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} className={inputBaseClass} />
                    </div>
                    <div className="w-1/3">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Per</label>
-                    <select name="rentDuration" value={formData.rentDuration} onChange={handleChange} className="w-full rounded-lg border px-3 py-2 bg-white">
+                    <select name="rentDuration" value={formData.rentDuration} onChange={handleChange} className={inputBaseClass}>
                       <option value="day">Day</option>
                       <option value="week">Week</option>
                       <option value="month">Month</option>
@@ -175,7 +194,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Describe your item..."
-                className="w-full rounded-lg border-gray-300 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+                className={inputBaseClass}
               />
               <button
                 type="button"
@@ -194,19 +213,37 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
           </div>
 
           {/* Seller Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-xl">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
-              <input type="text" name="sellerName" value={formData.sellerName} onChange={handleChange} className="w-full rounded-lg border-gray-300 border px-3 py-2 bg-white" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Info (Phone/Email) *</label>
-              <input type="text" name="contactInfo" value={formData.contactInfo} onChange={handleChange} className="w-full rounded-lg border-gray-300 border px-3 py-2 bg-white" />
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900">Contact Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
+                <input type="text" name="sellerName" value={formData.sellerName} onChange={handleChange} className={inputBaseClass} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                <input type="text" name="contactInfo" placeholder="For calls/SMS" value={formData.contactInfo} onChange={handleChange} className={inputBaseClass} />
+              </div>
+              <div className="md:col-span-2">
+                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <MessageCircle className="w-3 h-3 mr-1 text-green-600" />
+                    WhatsApp Number (Optional)
+                 </label>
+                 <input 
+                   type="text" 
+                   name="whatsappNumber" 
+                   placeholder="e.g. 2348123456789 (No + symbol)" 
+                   value={formData.whatsappNumber} 
+                   onChange={handleChange} 
+                   className={inputBaseClass} 
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">Use international format without the plus (e.g., 234...). Allows buyers to chat you instantly.</p>
+              </div>
             </div>
           </div>
 
           {/* Image Upload Mock */}
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors">
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white">
              <input type="file" className="hidden" id="img-upload" />
              <label htmlFor="img-upload" className="cursor-pointer">
                 <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />

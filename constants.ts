@@ -1,4 +1,4 @@
-import { Category, Condition, Listing, ListingType } from "./types";
+import { Category, Condition, Listing, ListingType, ListingStatus } from "./types";
 
 export const MOCK_LISTINGS: Listing[] = [
   {
@@ -11,8 +11,10 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.LIKE_NEW,
     sellerName: 'David O.',
     contactInfo: '08123456789',
+    whatsappNumber: '2348123456789',
     imageUrl: 'https://picsum.photos/seed/calc/400/300',
-    createdAt: new Date()
+    createdAt: new Date(),
+    status: ListingStatus.AVAILABLE
   },
   {
     id: '2',
@@ -25,8 +27,10 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.GOOD,
     sellerName: 'Sarah K.',
     contactInfo: 'sarah.k@student.unilag.edu.ng',
+    whatsappNumber: '2349011223344',
     imageUrl: 'https://picsum.photos/seed/coat/400/300',
-    createdAt: new Date()
+    createdAt: new Date(),
+    status: ListingStatus.AVAILABLE
   },
   {
     id: '3',
@@ -38,8 +42,10 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.GOOD,
     sellerName: 'Emmanuel J.',
     contactInfo: '09087654321',
+    whatsappNumber: '2349087654321',
     imageUrl: 'https://picsum.photos/seed/phone/400/300',
-    createdAt: new Date()
+    createdAt: new Date(),
+    status: ListingStatus.AVAILABLE
   },
   {
     id: '4',
@@ -51,8 +57,10 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.FAIR,
     sellerName: 'Chidinma',
     contactInfo: '07011223344',
+    whatsappNumber: '2347011223344',
     imageUrl: 'https://picsum.photos/seed/book/400/300',
-    createdAt: new Date()
+    createdAt: new Date(),
+    status: ListingStatus.AVAILABLE
   },
   {
     id: '5',
@@ -64,8 +72,10 @@ export const MOCK_LISTINGS: Listing[] = [
     condition: Condition.GOOD,
     sellerName: 'Tobi',
     contactInfo: '08099887766',
+    whatsappNumber: '2348099887766',
     imageUrl: 'https://picsum.photos/seed/fridge/400/300',
-    createdAt: new Date()
+    createdAt: new Date(),
+    status: ListingStatus.SOLD
   },
   {
     id: '6',
@@ -79,6 +89,7 @@ export const MOCK_LISTINGS: Listing[] = [
     sellerName: 'Ahmed',
     contactInfo: 'ahmed.eng@gmail.com',
     imageUrl: 'https://picsum.photos/seed/board/400/300',
-    createdAt: new Date()
+    createdAt: new Date(),
+    status: ListingStatus.RENTED
   }
 ];

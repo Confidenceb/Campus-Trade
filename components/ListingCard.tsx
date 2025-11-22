@@ -4,9 +4,10 @@ import { MessageCircle, Repeat, Clock, Tag, User } from 'lucide-react';
 
 interface ListingCardProps {
   listing: Listing;
+  onClick: () => void;
 }
 
-export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
+export const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
   const getBadgeColor = (type: ListingType) => {
     switch (type) {
       case ListingType.BUY: return 'bg-blue-100 text-blue-800';
@@ -37,20 +38,19 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
     }
   };
 
-  const handleContact = () => {
-    alert(`Contact ${listing.sellerName} at: ${listing.contactInfo}`);
-  };
-
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col h-full">
-      <div className="relative h-48 overflow-hidden bg-gray-200 group">
+    <div 
+      onClick={onClick}
+      className="bg-white rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full cursor-pointer group"
+    >
+      <div className="relative h-48 overflow-hidden bg-gray-200">
         <img 
           src={listing.imageUrl} 
           alt={listing.title} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute top-3 left-3">
-          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${getBadgeColor(listing.type)}`}>
+          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${getBadgeColor(listing.type)} shadow-sm`}>
             {listing.type}
           </span>
         </div>
@@ -58,13 +58,13 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
 
       <div className="p-5 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
-          <span className="text-xs font-medium text-gray-500 flex items-center bg-gray-50 px-2 py-1 rounded">
+          <span className="text-xs font-medium text-gray-500 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100">
             <Tag className="w-3 h-3 mr-1" /> {listing.category}
           </span>
-          <span className="text-xs text-gray-400">{listing.condition}</span>
+          <span className="text-xs text-gray-400 font-medium">{listing.condition}</span>
         </div>
 
-        <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-1">{listing.title}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-1 group-hover:text-indigo-600 transition-colors">{listing.title}</h3>
         <p className="text-sm text-gray-600 mb-4 line-clamp-2 flex-grow">{listing.description}</p>
 
         <div className="mt-auto">
@@ -73,16 +73,14 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-            <div className="flex items-center text-xs text-gray-500">
-              <User className="w-3 h-3 mr-1" />
+            <div className="flex items-center text-xs text-gray-500 font-medium">
+              <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center mr-2 text-[10px] font-bold text-gray-600">
+                {listing.sellerName.charAt(0)}
+              </div>
               {listing.sellerName}
             </div>
-            <button 
-              onClick={handleContact}
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center"
-            >
-              <MessageCircle className="w-4 h-4 mr-1" />
-              Contact
+            <button className="text-sm font-semibold text-indigo-600 group-hover:text-indigo-700 flex items-center bg-indigo-50 px-3 py-1.5 rounded-full transition-colors">
+              Details
             </button>
           </div>
         </div>

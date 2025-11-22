@@ -22,6 +22,12 @@ export enum Category {
   OTHER = 'Other'
 }
 
+export enum ListingStatus {
+  AVAILABLE = 'AVAILABLE',
+  SOLD = 'SOLD',
+  RENTED = 'RENTED'
+}
+
 export interface Listing {
   id: string;
   title: string;
@@ -34,7 +40,25 @@ export interface Listing {
   category: Category;
   condition: Condition;
   sellerName: string;
-  contactInfo: string;
+  contactInfo: string; // Phone or Email
+  whatsappNumber?: string; // Specific for WhatsApp
   imageUrl: string;
   createdAt: Date;
+  status: ListingStatus;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  isVerified: boolean;
+  avatarUrl?: string;
+  savedListingIds: string[]; // For Wishlist
+  // Extended Profile
+  username?: string;
+  course?: string;
+  faculty?: string;
+  level?: string;
+  bio?: string;
+  phoneNumber?: string;
 }
