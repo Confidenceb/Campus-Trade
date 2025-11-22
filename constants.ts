@@ -1,4 +1,4 @@
-import { Category, Condition, Listing, ListingType, ListingStatus } from "./types";
+import { Category, Condition, Listing, ListingType, ListingStatus, Notification, Review } from "./types";
 
 export const MOCK_LISTINGS: Listing[] = [
   {
@@ -91,5 +91,56 @@ export const MOCK_LISTINGS: Listing[] = [
     imageUrl: 'https://picsum.photos/seed/board/400/300',
     createdAt: new Date(),
     status: ListingStatus.RENTED
+  }
+];
+
+export const MOCK_NOTIFICATIONS: Notification[] = [
+  {
+    id: '1',
+    type: 'alert',
+    title: 'Price Drop Alert',
+    message: 'The price for "Casio FX-991EX" has dropped by 10%!',
+    isRead: false,
+    date: new Date()
+  },
+  {
+    id: '2',
+    type: 'message',
+    title: 'New Message',
+    message: 'Sarah K. replied to your inquiry about the Lab Coat.',
+    isRead: false,
+    date: new Date(Date.now() - 3600000) // 1 hour ago
+  },
+  {
+    id: '3',
+    type: 'success',
+    title: 'Listing Approved',
+    message: 'Your "GST 102 Textbook" is now live on the marketplace.',
+    isRead: true,
+    date: new Date(Date.now() - 86400000) // 1 day ago
+  }
+];
+
+export const MOCK_REVIEWS: Review[] = [
+  {
+    id: '1',
+    reviewerName: 'Tunde A.',
+    rating: 5,
+    comment: 'Item was exactly as described. Smooth transaction at Senate building.',
+    date: new Date(Date.now() - 86400000 * 2)
+  },
+  {
+    id: '2',
+    reviewerName: 'Bisi O.',
+    rating: 4,
+    comment: 'Good seller, but arrived 10 mins late. Item is perfect though.',
+    date: new Date(Date.now() - 86400000 * 5)
+  },
+  {
+    id: '3',
+    reviewerName: 'Emeka',
+    rating: 5,
+    comment: 'Saved me so much money on this textbook! Thanks.',
+    date: new Date(Date.now() - 86400000 * 10)
   }
 ];

@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { MOCK_LISTINGS } from './constants';
-import { Listing, ListingType, Category, User, ListingStatus } from './types';
+import React, { useState, useMemo, useEffect } from 'react';
+import { MOCK_LISTINGS, MOCK_NOTIFICATIONS, MOCK_REVIEWS } from './constants';
+import { Listing, ListingType, Category, User, ListingStatus, Notification } from './types';
 import { ListingCard } from './components/ListingCard';
 import { ListingModal } from './components/ListingModal';
 import { AuthPage } from './components/AuthPage';
@@ -8,9 +8,11 @@ import { KYCModal } from './components/KYCModal';
 import { ProductDetailsModal } from './components/ProductDetailsModal';
 import { ProfileModal } from './components/ProfileModal';
 import { DashboardModal } from './components/DashboardModal';
+import { ReportModal } from './components/ReportModal';
+import { NotificationDropdown } from './components/NotificationDropdown';
 import { Button } from './components/Button';
 import { Footer } from './components/Footer';
-import { Plus, Search, SlidersHorizontal, GraduationCap, ShoppingBag, Repeat, Clock, LogOut, User as UserIcon, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, GraduationCap, ShoppingBag, Repeat, Clock, LogOut, User as UserIcon, ShieldCheck, LayoutDashboard, Bell, Zap, Inbox } from 'lucide-react';
 
 const App: React.FC = () => {
   // Auth State
@@ -21,12 +23,16 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'ALL'>('ALL');
   const [listings, setListings] = useState<Listing[]>(MOCK_LISTINGS);
+  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
   
   // Modal States
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [reportingListingId, setReportingListingId] = useState<string | null>(null);
   
   // Profile States
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -40,7 +46,10 @@ const App: React.FC = () => {
       isVerified: false,
       savedListingIds: [],
       username: name.toLowerCase().replace(/\s/g, ''),
-      bio: "I'm a student at Unilag."
+      bio: "I'm a student at Unilag.",
+      notifications: MOCK_NOTIFICATIONS,
+      rating: 5.0,
+      reviews: []
     });
   };
 
@@ -73,6 +82,7 @@ const App: React.FC = () => {
   };
 
   const handleViewSeller = (sellerName: string) => {
+    // Simulate fetching seller data with mock trust stats
     const mockSeller: User = {
       id: 'seller-' + Math.random(),
       name: sellerName,
@@ -82,7 +92,9 @@ const App: React.FC = () => {
       username: sellerName.toLowerCase().replace(/\s/g, ''),
       course: 'Computer Science',
       level: '300',
-      bio: `Hi, I'm ${sellerName}. I sell mostly electronics and textbooks. Meet me at Science facade.`
+      bio: `Hi, I'm ${sellerName}. I sell mostly electronics and textbooks. Meet me at Science facade.`,
+      rating: 4.5 + (Math.random() * 0.5),
+      reviews: MOCK_REVIEWS
     };
     setViewingSeller(mockSeller);
   };
@@ -100,6 +112,17 @@ const App: React.FC = () => {
       price: newListingData.type === ListingType.BUY ? newListingData.price : undefined,
     };
     setListings(prev => [newListing, ...prev]);
+    
+    // Add a notification for the user
+    const newNotif: Notification = {
+        id: Date.now().toString(),
+        title: 'Listing Posted',
+        message: `Your item "${newListing.title}" is now live!`,
+        type: 'success',
+        isRead: false,
+        date: new Date()
+    };
+    setNotifications(prev => [newNotif, ...prev]);
   };
 
   const handleDeleteListing = (id: string) => {
@@ -122,9 +145,23 @@ const App: React.FC = () => {
     setUser({ ...user, savedListingIds: newSavedIds });
   };
 
-  const handleReportListing = (id: string) => {
-    alert(`Listing ${id} reported for review. Thank you for keeping Unilag safe!`);
-    setSelectedListing(null);
+  const handleInitiateReport = (id: string) => {
+    setReportingListingId(id);
+    setIsReportModalOpen(true);
+  };
+
+  const handleSubmitReport = (reason: string, details: string) => {
+    console.log(`Reported listing ${reportingListingId}: ${reason} - ${details}`);
+    // In real app, send to backend
+    alert("Report submitted successfully. Our moderation team will review it shortly.");
+    setReportingListingId(null);
+    if (selectedListing?.id === reportingListingId) {
+        setSelectedListing(null);
+    }
+  };
+
+  const handleMarkNotificationRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
   };
 
   const filteredListings = useMemo(() => {
@@ -150,6 +187,8 @@ const App: React.FC = () => {
   const savedListings = useMemo(() => {
     return listings.filter(l => user?.savedListingIds.includes(l.id));
   }, [listings, user]);
+
+  const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
   if (!user) {
     return <AuthPage onLogin={handleLogin} />;
@@ -185,6 +224,25 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Notification Bell */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                  className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition-colors relative"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadNotifications > 0 && (
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
+                  )}
+                </button>
+                <NotificationDropdown 
+                  isOpen={isNotificationOpen} 
+                  onClose={() => setIsNotificationOpen(false)}
+                  notifications={notifications}
+                  onMarkAsRead={handleMarkNotificationRead}
+                />
+              </div>
+
               <div className="hidden sm:flex flex-col items-end mr-2 cursor-pointer" onClick={() => setIsProfileModalOpen(true)}>
                  <span className="text-xs font-bold text-gray-900 hover:text-indigo-600 transition-colors">{user.name}</span>
                  {user.isVerified ? (
@@ -251,119 +309,152 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         
-        {/* Hero / Welcome */}
-        <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-6 sm:p-10 mb-8 text-white shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/10 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 rounded-full bg-indigo-500/20 blur-2xl"></div>
-          
-          <div className="relative z-10 max-w-2xl">
-             <h2 className="text-3xl sm:text-4xl font-bold mb-4">The Unilag Marketplace</h2>
-             <p className="text-indigo-100 text-lg mb-6">
-               Buy cheap essentials, swap what you don't need, or rent gear for your next practical. 
-               Safe, fast, and strictly for students.
-             </p>
-             <div className="flex flex-wrap gap-3">
-               <button onClick={() => setActiveTab(ListingType.BUY)} className="px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full hover:bg-white/20 transition text-sm font-medium">Browse Store</button>
-               <button onClick={handleAddListingClick} className="px-4 py-2 bg-white text-indigo-900 rounded-full hover:bg-indigo-50 transition text-sm font-bold">Sell Now</button>
-             </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8">
-          
-          {/* Sidebar Filters (Desktop) */}
-          <aside className="w-full lg:w-64 flex-shrink-0 space-y-8">
-            
-            {/* Filter Group: Type */}
-            <div>
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Market Type</h3>
-              <div className="space-y-1">
-                 {[
-                   { id: 'ALL', label: 'All Items', icon: SlidersHorizontal },
-                   { id: ListingType.BUY, label: 'For Sale', icon: ShoppingBag }, // Label change for display
-                   { id: ListingType.SWAP, label: 'Swap', icon: Repeat },
-                   { id: ListingType.RENT, label: 'Rent', icon: Clock },
-                 ].map((tab) => (
-                   <button
-                     key={tab.id}
-                     onClick={() => setActiveTab(tab.id as any)}
-                     className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                       activeTab === tab.id 
-                         ? 'bg-indigo-50 text-indigo-700' 
-                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                     }`}
-                   >
-                     <tab.icon className={`w-4 h-4 mr-3 ${activeTab === tab.id ? 'text-indigo-600' : 'text-gray-400'}`} />
-                     {tab.label}
-                   </button>
-                 ))}
-              </div>
-            </div>
-
-            {/* Filter Group: Categories */}
-            <div>
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Categories</h3>
-              <div className="space-y-1 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                <button
-                   onClick={() => setSelectedCategory('ALL')}
-                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedCategory === 'ALL' ? 'font-semibold text-indigo-700 bg-indigo-50' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                  All Categories
-                </button>
-                {Object.values(Category).map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      selectedCategory === cat 
-                        ? 'font-semibold text-indigo-700 bg-indigo-50' 
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-          </aside>
-
-          {/* Product Grid */}
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-6">
-               <h2 className="text-lg font-bold text-gray-900">
-                 {activeTab === 'ALL' ? 'All Listings' : `${activeTab === ListingType.BUY ? 'For Sale' : activeTab === ListingType.SWAP ? 'Swap Offers' : 'For Rent'}`}
-                 <span className="ml-2 text-sm font-normal text-gray-500">({filteredListings.length})</span>
-               </h2>
-            </div>
-
-            {filteredListings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredListings.map(listing => (
-                  <ListingCard 
-                    key={listing.id} 
-                    listing={listing} 
-                    onClick={() => setSelectedListing(listing)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
-                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Search className="w-8 h-8 text-gray-400" />
+        {/* New Engaging Hero Section */}
+        <div className="relative bg-indigo-900 rounded-3xl overflow-hidden mb-12 text-white shadow-2xl">
+           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+           <div className="absolute inset-0 bg-gradient-to-r from-indigo-900 via-indigo-900/90 to-transparent"></div>
+           
+           <div className="relative z-10 px-8 py-12 sm:py-16 sm:px-12 flex flex-col lg:flex-row items-center justify-between gap-8">
+              <div className="max-w-xl">
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-800/50 border border-indigo-700 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-6">
+                  <Zap className="w-3 h-3 mr-1 text-yellow-400" /> Exclusive to Unilag
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No items found</h3>
-                <p className="text-gray-500 max-w-xs mx-auto mb-6">
-                  We couldn't find any listings matching your filters. Try adjusting your search or category.
+                <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-4">
+                  The Smart Way to <br/>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-emerald-400">Buy, Sell & Swap</span>
+                </h1>
+                <p className="text-lg text-indigo-100 mb-8 leading-relaxed">
+                  Join thousands of Akokites trading textbooks, gadgets, and hostel essentials safely. Save money, reduce waste, and connect with your campus community.
                 </p>
-                <Button onClick={() => { setActiveTab('ALL'); setSelectedCategory('ALL'); setSearchQuery(''); }}>
-                  Clear Filters
-                </Button>
+                <div className="flex flex-wrap gap-4">
+                   <button onClick={() => setActiveTab(ListingType.BUY)} className="px-6 py-3 bg-white text-indigo-900 rounded-lg font-bold shadow-lg hover:bg-indigo-50 transition transform hover:-translate-y-0.5">
+                     Browse Marketplace
+                   </button>
+                   <button onClick={handleAddListingClick} className="px-6 py-3 bg-indigo-600 border border-indigo-500 text-white rounded-lg font-bold hover:bg-indigo-700 transition">
+                     Sell Your Stuff
+                   </button>
+                </div>
               </div>
-            )}
+              
+              {/* Trust Stats */}
+              <div className="grid grid-cols-2 gap-4 lg:gap-6 w-full lg:w-auto">
+                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-sm hover:bg-white/20 transition">
+                    <p className="text-2xl font-bold text-white">2.5k+</p>
+                    <p className="text-xs text-indigo-200 uppercase tracking-wide">Active Students</p>
+                 </div>
+                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-sm hover:bg-white/20 transition">
+                    <p className="text-2xl font-bold text-white">500+</p>
+                    <p className="text-xs text-indigo-200 uppercase tracking-wide">Items Listed</p>
+                 </div>
+                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-sm hover:bg-white/20 transition col-span-2 md:col-span-1">
+                    <p className="text-2xl font-bold text-white">98%</p>
+                    <p className="text-xs text-indigo-200 uppercase tracking-wide">Safe Trades</p>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* How it Works / Features */}
+        <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mb-4">
+                <ShoppingBag className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-lg mb-2">Buy & Save</h3>
+              <p className="text-sm text-gray-500">Find affordable textbooks, electronics, and hostel gear sold by fellow students.</p>
+           </div>
+           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mb-4">
+                <Repeat className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-lg mb-2">Student Swap</h3>
+              <p className="text-sm text-gray-500">Trade items you don't need for the ones you do. Save cash and reduce waste.</p>
+           </div>
+           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 mb-4">
+                <Clock className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-lg mb-2">Short-Term Rentals</h3>
+              <p className="text-sm text-gray-500">Need a lab coat or calculator for just one day? Rent it for a fraction of the cost.</p>
+           </div>
+        </div>
+
+        {/* Tabs & Filtering */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div className="flex p-1 bg-gray-200 rounded-xl">
+            <button
+              onClick={() => setActiveTab('ALL')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'ALL' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              All Listings
+            </button>
+            <button
+              onClick={() => setActiveTab(ListingType.BUY)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === ListingType.BUY ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Buy
+            </button>
+            <button
+              onClick={() => setActiveTab(ListingType.SWAP)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === ListingType.SWAP ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Swap
+            </button>
+            <button
+              onClick={() => setActiveTab(ListingType.RENT)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === ListingType.RENT ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Rent
+            </button>
           </div>
 
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+             <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+             <select 
+               className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:w-auto p-2"
+               value={selectedCategory}
+               onChange={(e) => setSelectedCategory(e.target.value as Category)}
+             >
+               <option value="ALL">All Categories</option>
+               {Object.values(Category).map(c => (
+                 <option key={c} value={c}>{c}</option>
+               ))}
+             </select>
+          </div>
         </div>
+
+        {/* Listings Grid */}
+        {filteredListings.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredListings.map((listing) => (
+              <ListingCard 
+                key={listing.id} 
+                listing={listing} 
+                onClick={() => setSelectedListing(listing)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300">
+             <div className="bg-indigo-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+               <Inbox className="w-8 h-8 text-indigo-400" />
+             </div>
+             <h3 className="text-lg font-medium text-gray-900">No listings found</h3>
+             <p className="text-gray-500 mb-6">Try adjusting your filters or search terms.</p>
+             <Button onClick={() => {setSearchQuery(''); setActiveTab('ALL'); setSelectedCategory('ALL');}}>
+               Clear Filters
+             </Button>
+          </div>
+        )}
+
       </main>
 
       <Footer />
@@ -372,16 +463,16 @@ const App: React.FC = () => {
       <ListingModal 
         isOpen={isListModalOpen} 
         onClose={() => setIsListModalOpen(false)} 
-        onSubmit={handleAddListing} 
+        onSubmit={handleAddListing}
       />
-      
-      <KYCModal 
+
+      <KYCModal
         isOpen={isKYCModalOpen}
         onClose={() => setIsKYCModalOpen(false)}
         onVerify={handleVerifyKYC}
       />
 
-      <ProductDetailsModal 
+      <ProductDetailsModal
         listing={selectedListing}
         currentUser={user}
         onClose={() => setSelectedListing(null)}
@@ -389,8 +480,25 @@ const App: React.FC = () => {
         onViewSeller={handleViewSeller}
         isSaved={selectedListing ? user.savedListingIds.includes(selectedListing.id) : false}
         onToggleSave={handleToggleSave}
-        onReport={handleReportListing}
+        onReport={handleInitiateReport}
       />
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        user={user}
+        isEditable={true}
+        onSave={handleUpdateProfile}
+      />
+
+      {viewingSeller && (
+        <ProfileModal
+          isOpen={!!viewingSeller}
+          onClose={() => setViewingSeller(null)}
+          user={viewingSeller}
+          isEditable={false}
+        />
+      )}
 
       <DashboardModal
         isOpen={isDashboardOpen}
@@ -402,24 +510,12 @@ const App: React.FC = () => {
         onMarkAsSold={handleMarkAsSold}
       />
 
-      {/* My Profile */}
-      <ProfileModal 
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        user={user}
-        isEditable={true}
-        onSave={handleUpdateProfile}
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSubmit={handleSubmitReport}
       />
 
-      {/* Seller Profile (Read-only) */}
-      {viewingSeller && (
-        <ProfileModal 
-          isOpen={!!viewingSeller}
-          onClose={() => setViewingSeller(null)}
-          user={viewingSeller}
-          isEditable={false}
-        />
-      )}
     </div>
   );
 };

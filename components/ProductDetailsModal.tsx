@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, MapPin, Shield, MessageCircle, CheckCircle, Phone, AlertCircle, ChevronRight, Heart, Flag, AlertTriangle } from 'lucide-react';
+import { X, User, MapPin, Shield, MessageCircle, CheckCircle, Phone, AlertCircle, ChevronRight, Heart, Flag, AlertTriangle, Star, Lock } from 'lucide-react';
 import { Listing, ListingType, User as UserType } from '../types';
 import { Button } from './Button';
 
@@ -57,15 +57,13 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
     }
   };
 
-  const handleReport = () => {
-    if (confirm("Are you sure you want to report this item as suspicious?")) {
-        if (onReport) onReport(listing.id);
-    }
+  const handleSecurePay = () => {
+    alert("Secure Escrow Payment\n\nThis feature simulates holding your funds safely until you receive the item.\n\nIntegration with Paystack/Remita would happen here.");
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-8 overflow-hidden flex flex-col md:flex-row min-h-[500px]" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-8 overflow-hidden flex flex-col md:flex-row min-h-[500px] animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
         
         {/* Image Side */}
         <div className="w-full md:w-1/2 bg-gray-100 relative group h-64 md:h-auto">
@@ -153,9 +151,15 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                         <User className="w-4 h-4 mr-2 text-gray-500" />
                         Seller Info
                       </h3>
-                      <span className="flex items-center text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded-full">
-                        <Shield className="w-3 h-3 mr-1" /> Verified Student
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-full border border-yellow-100">
+                          <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 mr-1" />
+                          <span className="text-xs font-bold text-yellow-700">4.8</span>
+                        </div>
+                        <span className="flex items-center text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded-full">
+                          <Shield className="w-3 h-3 mr-1" /> Verified
+                        </span>
+                      </div>
                    </div>
                    
                    <div className="flex items-center justify-between">
@@ -201,12 +205,21 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                         </p>
                     </div>
                     
-                    {listing.whatsappNumber && (
-                        <Button onClick={handleWhatsAppClick} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-sm">
-                            <MessageCircle className="w-5 h-5 mr-2" />
-                            Chat on WhatsApp
+                    <div className="flex gap-2">
+                        {listing.whatsappNumber && (
+                            <Button onClick={handleWhatsAppClick} className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-sm">
+                                <MessageCircle className="w-5 h-5 mr-2" />
+                                WhatsApp
+                            </Button>
+                        )}
+                        <Button onClick={handleSecurePay} variant="secondary" className="flex-1">
+                            <Lock className="w-4 h-4 mr-2" />
+                            Safe Pay
                         </Button>
-                    )}
+                    </div>
+                    <p className="text-[10px] text-center text-gray-400">
+                      SafePay holds your funds in escrow until you confirm receipt.
+                    </p>
                 </div>
              ) : (
                <div className="flex flex-col gap-2">
@@ -228,7 +241,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                  <p className="text-center text-xs text-gray-400 flex items-center">
                     <CheckCircle className="w-3 h-3 mr-1" /> Safe Trade Guarantee
                  </p>
-                 <button onClick={handleReport} className="text-xs text-gray-400 hover:text-red-600 flex items-center transition-colors">
+                 <button onClick={() => onReport && onReport(listing.id)} className="text-xs text-gray-400 hover:text-red-600 flex items-center transition-colors">
                     <Flag className="w-3 h-3 mr-1" /> Report Item
                  </button>
              </div>

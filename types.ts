@@ -47,6 +47,23 @@ export interface Listing {
   status: ListingStatus;
 }
 
+export interface Review {
+  id: string;
+  reviewerName: string;
+  rating: number; // 1-5
+  comment: string;
+  date: Date;
+}
+
+export interface Notification {
+  id: string;
+  type: 'alert' | 'message' | 'success';
+  title: string;
+  message: string;
+  isRead: boolean;
+  date: Date;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -61,4 +78,8 @@ export interface User {
   level?: string;
   bio?: string;
   phoneNumber?: string;
+  // Trust & Safety
+  rating?: number;
+  reviews?: Review[];
+  notifications?: Notification[];
 }
