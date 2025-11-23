@@ -11,6 +11,7 @@ export const MOCK_LISTINGS: Listing[] = [
     category: Category.ELECTRONICS,
     condition: Condition.LIKE_NEW,
     sellerName: 'David O.',
+    university: 'Unilag',
     contactInfo: '08123456789',
     imageUrl: 'https://picsum.photos/seed/calc/400/300',
     createdAt: new Date(),
@@ -19,13 +20,14 @@ export const MOCK_LISTINGS: Listing[] = [
   {
     id: '2',
     title: 'Medical Lab Coat (Size M)',
-    description: 'Standard Unilag medical lab coat. Clean and ironed. Needed for BIO 101 practicals.',
+    description: 'Standard medical lab coat. Clean and ironed. Needed for BIO 101 practicals.',
     type: ListingType.RENT,
     rentPrice: 500,
     rentDuration: 'per day',
     category: Category.LAB_GEAR,
     condition: Condition.GOOD,
     sellerName: 'Sarah K.',
+    university: 'LUTH / Unilag',
     contactInfo: 'sarah.k@student.unilag.edu.ng',
     imageUrl: 'https://picsum.photos/seed/coat/400/300',
     createdAt: new Date(),
@@ -40,6 +42,7 @@ export const MOCK_LISTINGS: Listing[] = [
     category: Category.ELECTRONICS,
     condition: Condition.GOOD,
     sellerName: 'Emmanuel J.',
+    university: 'Yabatech',
     contactInfo: '09087654321',
     imageUrl: 'https://picsum.photos/seed/phone/400/300',
     createdAt: new Date(),
@@ -54,6 +57,7 @@ export const MOCK_LISTINGS: Listing[] = [
     category: Category.TEXTBOOKS,
     condition: Condition.FAIR,
     sellerName: 'Chidinma',
+    university: 'Unilag',
     contactInfo: '07011223344',
     imageUrl: 'https://picsum.photos/seed/book/400/300',
     createdAt: new Date(),
@@ -62,12 +66,13 @@ export const MOCK_LISTINGS: Listing[] = [
   {
     id: '5',
     title: 'Mini Refrigerator',
-    description: 'Moving out of Jaja Hall. Selling my bedside fridge. Cools perfectly.',
+    description: 'Moving out of the hostel. Selling my bedside fridge. Cools perfectly.',
     type: ListingType.BUY,
     price: 45000,
     category: Category.HOSTEL,
     condition: Condition.GOOD,
     sellerName: 'Tobi',
+    university: 'LASU',
     contactInfo: '08099887766',
     imageUrl: 'https://picsum.photos/seed/fridge/400/300',
     createdAt: new Date(),
@@ -83,6 +88,7 @@ export const MOCK_LISTINGS: Listing[] = [
     category: Category.STATIONERY,
     condition: Condition.LIKE_NEW,
     sellerName: 'Ahmed',
+    university: 'Unilag',
     contactInfo: 'ahmed.eng@gmail.com',
     imageUrl: 'https://picsum.photos/seed/board/400/300',
     createdAt: new Date(),
@@ -149,6 +155,7 @@ export const MOCK_CONVERSATIONS: Conversation[] = [
     listingImage: 'https://picsum.photos/seed/coat/100/100',
     participants: ['user-123', 'seller-2'],
     otherUserName: 'Sarah K.',
+    otherUserUniversity: 'Unilag',
     lastMessage: 'Yes, it is available for pickup at Jaja Hall.',
     lastMessageDate: new Date(Date.now() - 3600000),
     unreadCount: 1,
@@ -164,6 +171,32 @@ export const MOCK_CONVERSATIONS: Conversation[] = [
         senderId: 'seller-2',
         text: 'Yes, it is available for pickup at Jaja Hall.',
         timestamp: new Date(Date.now() - 3600000)
+      }
+    ]
+  },
+  {
+    id: 'conv2',
+    listingId: '3',
+    listingTitle: 'Samsung A12 Swap',
+    listingImage: 'https://picsum.photos/seed/phone/100/100',
+    participants: ['user-123', 'seller-3'],
+    otherUserName: 'Emmanuel J.',
+    otherUserUniversity: 'Yabatech',
+    lastMessage: 'How much cash are you adding?',
+    lastMessageDate: new Date(Date.now() - 86400000),
+    unreadCount: 0,
+    messages: [
+      {
+        id: 'm1',
+        senderId: 'user-123',
+        text: 'I have an iPhone X. Clean.',
+        timestamp: new Date(Date.now() - 90000000)
+      },
+      {
+        id: 'm2',
+        senderId: 'seller-3',
+        text: 'How much cash are you adding?',
+        timestamp: new Date(Date.now() - 86400000)
       }
     ]
   }

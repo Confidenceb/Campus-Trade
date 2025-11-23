@@ -41,6 +41,7 @@ export interface Listing {
   category: Category;
   condition: Condition;
   sellerName: string;
+  university: string; // New: Campus origin
   contactInfo: string; // Hidden in UI, used for backend ref
   imageUrl: string;
   createdAt: Date;
@@ -52,7 +53,8 @@ export interface Message {
   senderId: string;
   text: string;
   timestamp: Date;
-  isSystemMessage?: boolean; // For warnings or automated updates
+  isSystemMessage?: boolean; 
+  isFlagged?: boolean; // New: AI moderation flag
 }
 
 export interface Conversation {
@@ -62,6 +64,7 @@ export interface Conversation {
   listingImage: string;
   participants: string[]; // User IDs
   otherUserName: string;
+  otherUserUniversity: string; // New
   lastMessage: string;
   lastMessageDate: Date;
   unreadCount: number;
@@ -89,11 +92,13 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  university: string;
   isVerified: boolean;
   avatarUrl?: string;
   savedListingIds: string[]; // For Wishlist
   // Extended Profile
   username?: string;
+  matricNumber?: string;
   course?: string;
   faculty?: string;
   level?: string;

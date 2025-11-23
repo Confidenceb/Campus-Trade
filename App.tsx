@@ -7,20 +7,21 @@ import { ListingModal } from './components/ListingModal';
 import { AuthPage } from './components/AuthPage';
 import { KYCModal } from './components/KYCModal';
 import { ProductDetailsModal } from './components/ProductDetailsModal';
-import { ProfileModal } from './components/ProfileModal';
+import { ProfilePage } from './components/ProfilePage';
 import { DashboardModal } from './components/DashboardModal';
 import { ReportModal } from './components/ReportModal';
 import { NotificationDropdown } from './components/NotificationDropdown';
-import { ChatModal } from './components/ChatModal';
+import { ChatInterface } from './components/ChatInterface';
 import { Button } from './components/Button';
 import { Footer } from './components/Footer';
-import { Plus, Search, SlidersHorizontal, GraduationCap, ShoppingBag, Repeat, Clock, LogOut, User as UserIcon, ShieldCheck, LayoutDashboard, Bell, Zap, Inbox } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, GraduationCap, ShoppingBag, User as UserIcon, ShieldCheck, LayoutDashboard, Bell, Zap, MessageCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   // Auth State
   const [user, setUser] = useState<User | null>(null);
   
   // App State
+  const [currentView, setCurrentView] = useState<'HOME' | 'CHAT' | 'PROFILE'>('HOME');
   const [activeTab, setActiveTab] = useState<ListingType | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'ALL'>('ALL');
@@ -36,34 +37,24 @@ const App: React.FC = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [reportingListingId, setReportingListingId] = useState<string | null>(null);
-  const [activeChat, setActiveChat] = useState<{ isOpen: boolean; recipient: string; listing?: Listing; conversationId?: string } | null>(null);
   
-  // Profile States
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [viewingSeller, setViewingSeller] = useState<User | null>(null);
+  // Chat State
+  const [targetConversationId, setTargetConversationId] = useState<string | null>(null);
+  
+  // Profile State
+  const [viewingProfileUser, setViewingProfileUser] = useState<User | null>(null);
 
-  const handleLogin = (name: string, email: string) => {
+  const handleLogin = (userData: Omit<User, 'id' | 'isVerified' | 'savedListingIds' | 'notifications' | 'rating' | 'reviews' | 'conversations'>) => {
     setUser({
-      id: 'user-123',
-      name,
-      email,
+      id: 'user-' + Date.now(),
       isVerified: false,
       savedListingIds: [],
-      username: name.toLowerCase().replace(/\s/g, ''),
-      bio: "I'm a student at Unilag.",
       notifications: MOCK_NOTIFICATIONS,
       rating: 5.0,
       reviews: [],
-      conversations: MOCK_CONVERSATIONS
+      conversations: MOCK_CONVERSATIONS,
+      ...userData
     });
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-  };
-
-  const handleUpdateProfile = (updatedUser: User) => {
-    setUser(updatedUser);
   };
 
   const handleVerifyKYC = () => {
@@ -82,16 +73,15 @@ const App: React.FC = () => {
   };
 
   const handleVerifyNeeded = () => {
-    // KYC modal opens on top of other modals
     setIsKYCModalOpen(true);
   };
 
   const handleViewSeller = (sellerName: string) => {
-    // Simulate fetching seller data with mock trust stats
     const mockSeller: User = {
       id: 'seller-' + Math.random(),
       name: sellerName,
       email: `${sellerName.toLowerCase().split(' ')[0]}@student.unilag.edu.ng`,
+      university: 'Unilag',
       isVerified: true,
       savedListingIds: [],
       username: sellerName.toLowerCase().replace(/\s/g, ''),
@@ -101,7 +91,16 @@ const App: React.FC = () => {
       rating: 4.5 + (Math.random() * 0.5),
       reviews: MOCK_REVIEWS
     };
-    setViewingSeller(mockSeller);
+    setViewingProfileUser(mockSeller);
+    setCurrentView('PROFILE');
+    setSelectedListing(null); // Close modal if open
+  };
+
+  const handleViewMyProfile = () => {
+      if (user) {
+        setViewingProfileUser(user);
+        setCurrentView('PROFILE');
+      }
   };
 
   const handleAddListing = (newListingData: Omit<Listing, 'id' | 'createdAt' | 'status'>) => {
@@ -111,13 +110,13 @@ const App: React.FC = () => {
       createdAt: new Date(),
       status: ListingStatus.AVAILABLE,
       sellerName: user?.name || newListingData.sellerName,
+      university: user?.university || 'Unilag',
       rentPrice: newListingData.type === ListingType.RENT ? newListingData.rentPrice : undefined,
       rentDuration: newListingData.type === ListingType.RENT ? newListingData.rentDuration : undefined,
       swapRequest: newListingData.type === ListingType.SWAP ? newListingData.swapRequest : undefined,
       price: newListingData.type === ListingType.BUY ? newListingData.price : undefined,
     };
     setListings([newListing, ...listings]);
-    // Add success notification
     setNotifications([{
         id: Date.now().toString(),
         type: 'success',
@@ -154,32 +153,47 @@ const App: React.FC = () => {
   const handleSubmitReport = (reason: string, details: string) => {
       console.log(`Reported listing ${reportingListingId}: ${reason} - ${details}`);
       setReportingListingId(null);
-      // In a real app, send to backend
   };
 
-  const handleChatOpen = (listing: Listing) => {
-    setActiveChat({
-      isOpen: true,
-      recipient: listing.sellerName,
-      listing: listing
-    });
-  };
-
-  const handleOpenConversation = (conversationId: string) => {
-    const conv = conversations.find(c => c.id === conversationId);
-    if (conv) {
-      setActiveChat({
-        isOpen: true,
-        recipient: conv.otherUserName,
-        conversationId: conv.id
-      });
-      setIsDashboardOpen(false); // Close dashboard if opening from there
+  const handleStartChat = (listing: Listing) => {
+    // Check if conversation already exists
+    const existingConv = conversations.find(c => c.listingId === listing.id && c.participants.includes(listing.sellerName)); // Simple check mock
+    
+    if (existingConv) {
+        setTargetConversationId(existingConv.id);
+    } else {
+        // Create new mock conversation
+        const newConvId = 'new-' + Date.now();
+        const newConv: Conversation = {
+            id: newConvId,
+            listingId: listing.id,
+            listingTitle: listing.title,
+            listingImage: listing.imageUrl,
+            participants: [user!.id, listing.sellerName],
+            otherUserName: listing.sellerName,
+            otherUserUniversity: listing.university,
+            lastMessage: 'Started new chat',
+            lastMessageDate: new Date(),
+            unreadCount: 0,
+            messages: []
+        };
+        setConversations([newConv, ...conversations]);
+        setTargetConversationId(newConvId);
     }
+    
+    setSelectedListing(null);
+    setCurrentView('CHAT');
   };
 
-  const handleSendMessage = (text: string) => {
-     console.log("Message sent:", text);
-     // Here you would update the conversation state or send to backend
+  const handleOpenDashboardChat = (conversationId: string) => {
+    setTargetConversationId(conversationId);
+    setIsDashboardOpen(false);
+    setCurrentView('CHAT');
+  };
+
+  const handleUpdateProfile = (updatedUser: User) => {
+    setUser(updatedUser);
+    setViewingProfileUser(updatedUser); // Update view if looking at self
   };
 
   const filteredListings = useMemo(() => {
@@ -206,6 +220,30 @@ const App: React.FC = () => {
     return <AuthPage onLogin={handleLogin} />;
   }
 
+  // Render Full Page Chat
+  if (currentView === 'CHAT') {
+    return (
+        <ChatInterface 
+            currentUser={user}
+            conversations={conversations}
+            activeConversationId={targetConversationId}
+            onBackToHome={() => setCurrentView('HOME')}
+        />
+    );
+  }
+
+  // Render Full Page Profile
+  if (currentView === 'PROFILE' && viewingProfileUser) {
+    return (
+        <ProfilePage 
+            user={viewingProfileUser}
+            isEditable={viewingProfileUser.id === user.id}
+            onBack={() => setCurrentView('HOME')}
+            onSave={handleUpdateProfile}
+        />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
       {/* Navigation */}
@@ -216,13 +254,14 @@ const App: React.FC = () => {
               setActiveTab('ALL');
               setSelectedCategory('ALL');
               setSearchQuery('');
+              setCurrentView('HOME');
             }}>
               <div className="bg-indigo-600 p-1.5 rounded-lg mr-2 shadow-md shadow-indigo-200">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">CampusTrade</h1>
-                <p className="text--[10px] text-indigo-600 font-bold uppercase tracking-wider">Unilag Edition</p>
+                <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Student Marketplace</p>
               </div>
             </div>
             
@@ -243,6 +282,14 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-3">
+               <button 
+                onClick={() => setCurrentView('CHAT')}
+                className="hidden md:flex items-center text-gray-600 hover:text-indigo-600 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                title="Messages"
+               >
+                 <MessageCircle className="w-6 h-6" />
+               </button>
+
                <button 
                 onClick={() => setIsDashboardOpen(true)}
                 className="hidden md:flex items-center text-gray-600 hover:text-indigo-600 font-medium text-sm transition-colors"
@@ -272,22 +319,14 @@ const App: React.FC = () => {
 
                <div 
                  className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded-lg transition-colors"
-                 onClick={() => setIsProfileModalOpen(true)}
+                 onClick={handleViewMyProfile}
                >
                   <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold border border-indigo-200">
                     {user.name.charAt(0)}
                   </div>
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-semibold text-gray-900 leading-none">{user.name}</p>
-                    {user.isVerified ? (
-                      <p className="text-[10px] text-emerald-600 font-medium flex items-center mt-0.5">
-                        <ShieldCheck className="w-3 h-3 mr-0.5" /> Verified
-                      </p>
-                    ) : (
-                      <p className="text-[10px] text-orange-500 font-medium flex items-center mt-0.5">
-                        Unverified
-                      </p>
-                    )}
+                    <p className="text-[10px] text-gray-400">{user.university}</p>
                   </div>
                </div>
                
@@ -304,7 +343,7 @@ const App: React.FC = () => {
       </nav>
       
       {/* Mobile Search Bar */}
-      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3">
+      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex gap-2">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
@@ -312,11 +351,17 @@ const App: React.FC = () => {
             <input
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm"
-              placeholder="Search Unilag market..."
+              placeholder="Search items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <button 
+             onClick={() => setCurrentView('CHAT')}
+             className="bg-indigo-50 text-indigo-600 p-2 rounded-lg"
+          >
+             <MessageCircle className="w-6 h-6" />
+          </button>
       </div>
 
       {/* Hero Stats Section */}
@@ -329,7 +374,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
            <h2 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Buy, Sell & Swap on Campus</h2>
            <p className="text-indigo-100 text-lg max-w-2xl mx-auto mb-10">
-             The safest way to trade with fellow Unilag students. Join 5,000+ students saving money today.
+             The safest way to trade with fellow students. Join thousands of students across campuses saving money today.
            </p>
            
            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
@@ -351,7 +396,7 @@ const App: React.FC = () => {
               <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
                  <ShieldCheck className="w-8 h-8 text-blue-300 mx-auto mb-2" />
                  <div className="text-2xl font-bold">100%</div>
-                 <div className="text-xs text-indigo-200">Verified Users</div>
+                 <div className="text-xs text-indigo-200">AI Monitored</div>
               </div>
            </div>
         </div>
@@ -462,7 +507,7 @@ const App: React.FC = () => {
               <div className="bg-white p-8 rounded-2xl border border-gray-100 text-center hover:shadow-lg transition-shadow">
                  <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mx-auto mb-4 text-xl font-bold">2</div>
                  <h3 className="text-lg font-bold text-gray-900 mb-2">Chat Securely</h3>
-                 <p className="text-sm text-gray-500">Connect with verified students via our in-app chat. No need to share numbers.</p>
+                 <p className="text-sm text-gray-500">Connect with verified students via our in-app chat. AI monitors keep it safe.</p>
               </div>
               <div className="bg-white p-8 rounded-2xl border border-gray-100 text-center hover:shadow-lg transition-shadow">
                  <div className="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mx-auto mb-4 text-xl font-bold">3</div>
@@ -507,8 +552,8 @@ const App: React.FC = () => {
         isSaved={selectedListing ? user.savedListingIds.includes(selectedListing.id) : false}
         onToggleSave={handleToggleSave}
         onReport={handleReportListing}
-        onChat={handleChatOpen}
-        canClose={!isKYCModalOpen && !activeChat}
+        onChat={handleStartChat}
+        canClose={!isKYCModalOpen}
       />
 
       <DashboardModal
@@ -520,7 +565,7 @@ const App: React.FC = () => {
         conversations={conversations}
         onDeleteListing={handleDeleteListing}
         onMarkAsSold={handleMarkAsSold}
-        onOpenChat={handleOpenConversation}
+        onOpenChat={handleOpenDashboardChat}
       />
 
       <ReportModal
@@ -528,36 +573,6 @@ const App: React.FC = () => {
         onClose={() => setIsReportModalOpen(false)}
         onSubmit={handleSubmitReport}
       />
-
-      <ProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        user={user}
-        isEditable={true}
-        onSave={handleUpdateProfile}
-      />
-
-      {viewingSeller && (
-        <ProfileModal
-          isOpen={!!viewingSeller}
-          onClose={() => setViewingSeller(null)}
-          user={viewingSeller}
-          isEditable={false}
-        />
-      )}
-
-      {activeChat && (
-        <ChatModal
-          isOpen={activeChat.isOpen}
-          onClose={() => setActiveChat(null)}
-          recipientName={activeChat.recipient}
-          listing={activeChat.listing}
-          currentUser={user}
-          existingMessages={activeChat.conversationId ? conversations.find(c => c.id === activeChat.conversationId)?.messages : []}
-          onSendMessage={handleSendMessage}
-        />
-      )}
-
     </div>
   );
 };

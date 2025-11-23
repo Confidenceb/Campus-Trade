@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, User, MapPin, Shield, MessageCircle, CheckCircle, AlertCircle, ChevronRight, Heart, Flag, AlertTriangle, Star, Lock } from 'lucide-react';
 import { Listing, ListingType, User as UserType } from '../types';
@@ -13,7 +14,7 @@ interface ProductDetailsModalProps {
   onToggleSave?: (id: string) => void;
   onReport?: (id: string) => void;
   onChat?: (listing: Listing) => void;
-  canClose?: boolean; // Control if Esc key should work (to prevent closing when child modal is open)
+  canClose?: boolean; 
 }
 
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ 
@@ -29,7 +30,6 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   canClose = true
 }) => {
   
-  // Scroll lock
   useEffect(() => {
     if (listing) {
       document.body.style.overflow = 'hidden';
@@ -39,7 +39,6 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
     return () => { document.body.style.overflow = 'unset'; };
   }, [listing]);
 
-  // Handle Esc key with priority check
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && canClose) onClose();
@@ -69,28 +68,33 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto" onClick={() => canClose && onClose()}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-8 overflow-hidden flex flex-col md:flex-row min-h-[500px] animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm overflow-hidden" onClick={() => canClose && onClose()}>
+      {/* Mobile: Full Screen, Desktop: Centered Modal */}
+      <div className="bg-white md:rounded-2xl shadow-2xl w-full h-full md:h-auto md:max-h-[90vh] md:max-w-4xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-200 overflow-hidden" onClick={e => e.stopPropagation()}>
         
         {/* Image Side */}
-        <div className="w-full md:w-1/2 bg-gray-100 relative group h-64 md:h-auto">
+        <div className="w-full md:w-1/2 bg-gray-900 relative group h-64 shrink-0 md:h-auto">
+          {/* Close Button - Enhanced for Mobile Visibility */}
+          <button 
+            onClick={onClose}
+            className="absolute top-4 left-4 p-2 bg-white/90 text-gray-900 rounded-full hover:bg-white shadow-lg md:hidden z-50 focus:outline-none active:scale-95 transition-transform"
+            aria-label="Close details"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
           <img 
             src={listing.imageUrl} 
             alt={listing.title} 
-            className="w-full h-full object-cover absolute inset-0"
+            className="w-full h-full object-contain md:object-cover bg-black"
           />
-          <button 
-            onClick={onClose}
-            className="absolute top-4 left-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 md:hidden z-10"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+          
+          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end z-10 pointer-events-none">
              <div className="flex gap-2">
-                <span className="px-3 py-1 bg-black/60 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider rounded-full">
+                <span className="px-3 py-1 bg-black/60 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-sm">
                   {listing.type}
                 </span>
-                <span className="px-3 py-1 bg-black/60 backdrop-blur-md text-white text-xs font-medium rounded-full">
+                <span className="px-3 py-1 bg-black/60 backdrop-blur-md text-white text-xs font-medium rounded-full shadow-sm">
                   {listing.condition}
                 </span>
              </div>
@@ -98,9 +102,9 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         </div>
 
         {/* Content Side */}
-        <div className="w-full md:w-1/2 flex flex-col relative bg-white">
-          {/* Header Actions */}
-          <div className="absolute top-4 right-4 flex gap-2 z-10">
+        <div className="w-full md:w-1/2 flex flex-col relative bg-white h-full overflow-hidden">
+          {/* Desktop Header Actions */}
+          <div className="hidden md:flex absolute top-4 right-4 gap-2 z-10">
             {onToggleSave && (
                 <button 
                     onClick={() => onToggleSave(listing.id)}
@@ -112,15 +116,30 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
             )}
             <button 
                 onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full hidden md:block"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
             >
                 <X className="w-6 h-6" />
             </button>
           </div>
 
           <div className="p-6 md:p-8 flex-grow overflow-y-auto custom-scrollbar">
-             <div className="mb-6 mt-4 md:mt-0">
-                <h4 className="text-sm font-semibold text-indigo-600 mb-1 uppercase tracking-wide">{listing.category}</h4>
+             {/* Mobile Save Button (Top Right of content) */}
+             <div className="md:hidden flex justify-end mb-2">
+                 {onToggleSave && (
+                    <button 
+                        onClick={() => onToggleSave(listing.id)}
+                        className={`p-2 rounded-full transition-colors ${isSaved ? 'bg-pink-50 text-pink-600' : 'bg-gray-50 text-gray-400'}`}
+                    >
+                        <Heart className={`w-6 h-6 ${isSaved ? 'fill-current' : ''}`} />
+                    </button>
+                )}
+             </div>
+
+             <div className="mb-6">
+                <div className="flex items-center justify-between mb-1">
+                    <h4 className="text-sm font-semibold text-indigo-600 uppercase tracking-wide">{listing.category}</h4>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">{listing.university}</span>
+                </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">{listing.title}</h2>
                 
                 <div className="mt-3">
@@ -145,7 +164,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
              <div className="space-y-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-900 border-b border-gray-100 pb-2 mb-3">Description</h3>
-                  <p className="text-gray-600 leading-relaxed whitespace-pre-line">{listing.description}</p>
+                  <p className="text-gray-600 leading-relaxed whitespace-pre-line text-sm md:text-base">{listing.description}</p>
                 </div>
 
                 {/* Seller Info Card */}
@@ -177,7 +196,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                           <div>
                             <p className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{listing.sellerName}</p>
                             <p className="text-xs text-gray-500 flex items-center mt-0.5">
-                              <MapPin className="w-3 h-3 mr-1" /> Unilag Campus
+                              <MapPin className="w-3 h-3 mr-1" /> {listing.university}
                             </p>
                           </div>
                       </div>
@@ -191,16 +210,15 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                         <AlertTriangle className="w-3 h-3 mr-1" /> Secure Platform
                     </h4>
                     <p className="text-xs text-orange-700 leading-relaxed">
-                        Payments are held in Escrow. Do not send money directly to the seller. Use the "Make Offer" or "Buy Now" buttons to ensure your funds are protected.
+                        Payments are held in Escrow. Chats are AI monitored for your safety. Do not share phone numbers.
                     </p>
                 </div>
              </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+          <div className="p-4 md:p-6 border-t border-gray-100 bg-gray-50/50 pb-8 md:pb-6">
              <div className="flex flex-col gap-3">
-                 {/* Main Actions */}
                  <div className="flex gap-3">
                     <Button onClick={handleChatClick} variant="outline" className="flex-1 border-gray-300 hover:bg-gray-50 hover:border-indigo-300 hover:text-indigo-600">
                         <MessageCircle className="w-5 h-5 mr-2" />
@@ -215,7 +233,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
                  {!currentUser?.isVerified && (
                     <p className="text-center text-[10px] text-orange-500 flex items-center justify-center mt-1">
-                      <AlertCircle className="w-3 h-3 mr-1" /> Verification required to make deals
+                      <AlertCircle className="w-3 h-3 mr-1" /> Verification required
                     </p>
                  )}
              </div>

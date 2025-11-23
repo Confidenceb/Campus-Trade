@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Listing, ListingType } from '../types';
-import { MessageCircle, Repeat, Clock, Tag, User } from 'lucide-react';
+import { MessageCircle, Repeat, Clock, Tag, User, MapPin } from 'lucide-react';
 
 interface ListingCardProps {
   listing: Listing;
@@ -61,7 +62,9 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) =>
           <span className="text-xs font-medium text-gray-500 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100">
             <Tag className="w-3 h-3 mr-1" /> {listing.category}
           </span>
-          <span className="text-xs text-gray-400 font-medium">{listing.condition}</span>
+          <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-bold border border-indigo-100 flex items-center">
+            <MapPin className="w-3 h-3 mr-1" /> {listing.university}
+          </span>
         </div>
 
         <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-1 group-hover:text-indigo-600 transition-colors">{listing.title}</h3>
