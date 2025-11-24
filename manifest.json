@@ -1,0 +1,21 @@
+{
+  "name": "CampusTrade Unilag",
+  "short_name": "CampusTrade",
+  "description": "Student-to-student marketplace for buying, selling, and renting.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192.png?text=CT",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512.png?text=CampusTrade",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

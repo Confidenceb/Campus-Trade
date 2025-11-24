@@ -15,7 +15,8 @@ export const MOCK_LISTINGS: Listing[] = [
     contactInfo: '08123456789',
     imageUrl: 'https://picsum.photos/seed/calc/400/300',
     createdAt: new Date(),
-    status: ListingStatus.AVAILABLE
+    status: ListingStatus.AVAILABLE,
+    isFeatured: true
   },
   {
     id: '2',
@@ -199,5 +200,24 @@ export const MOCK_CONVERSATIONS: Conversation[] = [
         timestamp: new Date(Date.now() - 86400000)
       }
     ]
+  }
+];
+
+export const FAQS = [
+  {
+    question: "How do I ensure a safe trade?",
+    answer: "Always chat within the app using our AI-monitored system. For expensive items, use our Escrow payment option. Meet in open, public places on campus like the Senate Building, Faculty entrances, or libraries."
+  },
+  {
+    question: "What is Escrow Payment?",
+    answer: "Escrow protects both buyer and seller. The buyer pays CampusTrade, we hold the money, and only release it to the seller once the buyer confirms they received the item in good condition."
+  },
+  {
+    question: "How do I become a Verified Student?",
+    answer: "Go to your profile settings and click 'Verify'. You will need to upload a clear picture of your valid School ID card and Matric Number."
+  },
+  {
+    question: "Can I sell items from outside Unilag?",
+    answer: "Yes! While we started in Unilag, we support students from LASU, Yabatech, and other nearby institutions. Just select your school when listing."
   }
 ];

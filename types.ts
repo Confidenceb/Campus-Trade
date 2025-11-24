@@ -46,6 +46,7 @@ export interface Listing {
   imageUrl: string;
   createdAt: Date;
   status: ListingStatus;
+  isFeatured?: boolean; // New: For featured listings
 }
 
 export interface Message {
@@ -104,6 +105,7 @@ export interface User {
   level?: string;
   bio?: string;
   phoneNumber?: string;
+  referralCode?: string; // New
   // Trust & Safety
   rating?: number;
   reviews?: Review[];

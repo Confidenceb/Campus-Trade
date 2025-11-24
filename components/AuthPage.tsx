@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { GraduationCap, ArrowRight, User as UserIcon, BookOpen, Building2, Phone, Hash, Mail } from 'lucide-react';
+import { GraduationCap, ArrowRight, User as UserIcon, BookOpen, Building2, Phone, Hash, Mail, Camera, Upload } from 'lucide-react';
 import { Button } from './Button';
 import { User } from '../types';
 
@@ -32,11 +32,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
     course: '',
     level: '',
     phoneNumber: '',
-    bio: ''
+    bio: '',
+    avatarUrl: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setFormData(prev => ({ ...prev, avatarUrl: url }));
+    }
   };
 
   const handleNextStep = (e: React.FormEvent) => {
@@ -59,7 +68,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
         course: formData.course,
         level: formData.level,
         phoneNumber: formData.phoneNumber,
-        bio: formData.bio || "Student on CampusTrade."
+        bio: formData.bio || "Student on CampusTrade.",
+        avatarUrl: formData.avatarUrl
       });
       setIsLoading(false);
     }, 1500);
@@ -253,13 +263,37 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
                </div>
             )}
 
-            {/* SIGN UP - STEP 3: Bio (Optional) */}
+            {/* SIGN UP - STEP 3: Bio & Avatar (Optional) */}
             {!isLogin && step === 3 && (
                <div className="space-y-5 animate-in fade-in slide-in-from-right-4">
                   <div className="text-center">
                      <h3 className="text-lg font-medium text-gray-900">Almost Done!</h3>
-                     <p className="text-sm text-gray-500">Add a bio so people trust you more.</p>
+                     <p className="text-sm text-gray-500">Personalize your profile.</p>
                   </div>
+
+                  {/* Profile Picture Upload */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative group cursor-pointer w-24 h-24 mb-4">
+                      <div className={`w-24 h-24 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden ${formData.avatarUrl ? 'border-none' : 'bg-gray-50'}`}>
+                        {formData.avatarUrl ? (
+                          <img src={formData.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <UserIcon className="w-8 h-8 text-gray-400" />
+                        )}
+                      </div>
+                      <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Camera className="w-6 h-6 text-white" />
+                      </div>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={handleImageUpload}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">Upload Profile Photo (Optional)</p>
+                  </div>
+
                   <div>
                     <label className={labelClass}>Bio (Optional)</label>
                     <textarea
@@ -303,6 +337,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
                 onClick={() => {
                   setIsLogin(!isLogin);
                   setStep(1);
+                  setFormData(prev => ({ ...prev, avatarUrl: '' })); // Reset avatar on switch
                 }}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
               >
