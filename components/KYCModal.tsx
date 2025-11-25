@@ -2,20 +2,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShieldCheck, X, Camera, CheckCircle, Smartphone, Database, ScanFace, Loader2 } from 'lucide-react';
 import { Button } from './Button';
+import { User } from '../types';
 
 interface KYCModalProps {
   isOpen: boolean;
   onClose: () => void;
   onVerify: () => void;
+  user?: User;
 }
 
 type KYCStep = 'INFO' | 'CAMERA' | 'PROCESSING' | 'SUCCESS';
 
-export const KYCModal: React.FC<KYCModalProps> = ({ isOpen, onClose, onVerify }) => {
+export const KYCModal: React.FC<KYCModalProps> = ({ isOpen, onClose, onVerify, user }) => {
   const [step, setStep] = useState<KYCStep>('INFO');
   const [formData, setFormData] = useState({
-    matricNumber: '',
-    faculty: '',
+    fullName: user?.name || '',
+    matricNumber: user?.matricNumber || '',
+    faculty: user?.course || '',
   });
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [processStatus, setProcessStatus] = useState<string>('');
@@ -34,7 +37,7 @@ export const KYCModal: React.FC<KYCModalProps> = ({ isOpen, onClose, onVerify })
 
   const handleInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.matricNumber || !formData.faculty) return;
+    if (!formData.fullName || !formData.matricNumber || !formData.faculty) return;
     setStep('CAMERA');
   };
 
@@ -95,6 +98,19 @@ export const KYCModal: React.FC<KYCModalProps> = ({ isOpen, onClose, onVerify })
                 <div className="text-center mb-6">
                     <h3 className="font-bold text-gray-900 dark:text-white text-lg">Student Details</h3>
                     <p className="text-gray-500 text-sm">Confirm your academic information.</p>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                    <input 
+                    type="text" 
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={e => setFormData({...formData, fullName: e.target.value})}
+                    placeholder="e.g. John Doe" 
+                    className="w-full rounded-xl border-gray-300 dark:border-gray-600 border px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white" 
+                    required
+                    />
                 </div>
 
                 <div>

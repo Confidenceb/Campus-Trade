@@ -15,11 +15,12 @@ import { ChatInterface } from './components/ChatInterface';
 import { HelpSupportPage } from './components/HelpSupportPage';
 import { Button } from './components/Button';
 import { Footer } from './components/Footer';
-import { Plus, Search, SlidersHorizontal, GraduationCap, ShoppingBag, User as UserIcon, ShieldCheck, LayoutDashboard, Bell, Zap, MessageCircle, HelpCircle, Moon, Sun, Download, ChevronRight, AlertCircle } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, GraduationCap, ShoppingBag, User as UserIcon, ShieldCheck, LayoutDashboard, Bell, Zap, MessageCircle, HelpCircle, Moon, Sun, Download, ChevronRight, AlertCircle, LogOut } from 'lucide-react';
 
 const App: React.FC = () => {
   // Auth State
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // App State
   const [currentView, setCurrentView] = useState<'HOME' | 'CHAT' | 'PROFILE' | 'HELP'>('HOME');
@@ -29,7 +30,16 @@ const App: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>(MOCK_LISTINGS);
   const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
   const [conversations, setConversations] = useState<Conversation[]>(MOCK_CONVERSATIONS);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Initialize dark mode from localStorage or system preference immediately to prevent flash
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const manualDarkMode = localStorage.getItem('campustrade_darkmode_manual');
+    if (manualDarkMode !== null) {
+      return manualDarkMode === 'true';
+    }
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+  
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   
   // Modal States
@@ -47,21 +57,31 @@ const App: React.FC = () => {
   // Profile State
   const [viewingProfileUser, setViewingProfileUser] = useState<User | null>(null);
 
-  // Initialize Dark Mode & PWA
+  // Restore user from localStorage on app load
   useEffect(() => {
-    // Check system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        setIsDarkMode(true);
+    const savedUser = localStorage.getItem('campustrade_user');
+    const manualDarkMode = localStorage.getItem('campustrade_darkmode_manual');
+    
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Failed to parse saved user:', error);
+        localStorage.removeItem('campustrade_user');
+      }
     }
     
     // Simulate PWA install prompt availability
     setTimeout(() => {
-        // In a real app, listen for 'beforeinstallprompt' event
         setShowInstallPrompt(true);
     }, 5000);
+    
+    // Done loading
+    setIsLoading(false);
   }, []);
 
-  // Apply Dark Mode to HTML root for global persistence
+  // Apply Dark Mode to HTML root (but don't save to localStorage here)
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -71,11 +91,14 @@ const App: React.FC = () => {
   }, [isDarkMode]);
 
   const toggleDarkMode = () => {
-      setIsDarkMode(!isDarkMode);
+      const newMode = !isDarkMode;
+      setIsDarkMode(newMode);
+      // Save manual preference to localStorage
+      localStorage.setItem('campustrade_darkmode_manual', newMode.toString());
   };
 
   const handleLogin = (userData: Omit<User, 'id' | 'isVerified' | 'savedListingIds' | 'notifications' | 'rating' | 'reviews' | 'conversations'>) => {
-    setUser({
+    const newUser = {
       id: 'user-' + Date.now(),
       isVerified: false,
       savedListingIds: [],
@@ -85,12 +108,16 @@ const App: React.FC = () => {
       conversations: MOCK_CONVERSATIONS,
       referralCode: userData.name.substring(0, 4).toUpperCase() + '24',
       ...userData
-    });
+    };
+    setUser(newUser);
+    localStorage.setItem('campustrade_user', JSON.stringify(newUser));
   };
 
   const handleVerifyKYC = () => {
     if (user) {
-      setUser({ ...user, isVerified: true });
+      const updatedUser = { ...user, isVerified: true };
+      setUser(updatedUser);
+      localStorage.setItem('campustrade_user', JSON.stringify(updatedUser));
       setIsKYCModalOpen(false);
     }
   };
@@ -173,7 +200,9 @@ const App: React.FC = () => {
         ? user.savedListingIds.filter(sid => sid !== id)
         : [...user.savedListingIds, id];
     
-    setUser({ ...user, savedListingIds: newSavedIds });
+    const updatedUser = { ...user, savedListingIds: newSavedIds };
+    setUser(updatedUser);
+    localStorage.setItem('campustrade_user', JSON.stringify(updatedUser));
   };
 
   const handleReportListing = (id: string) => {
@@ -224,7 +253,14 @@ const App: React.FC = () => {
 
   const handleUpdateProfile = (updatedUser: User) => {
     setUser(updatedUser);
+    localStorage.setItem('campustrade_user', JSON.stringify(updatedUser));
     setViewingProfileUser(updatedUser); // Update view if looking at self
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('campustrade_user');
+    setUser(null);
+    setCurrentView('HOME');
   };
 
   const featuredListings = useMemo(() => listings.filter(l => l.isFeatured), [listings]);
@@ -249,6 +285,19 @@ const App: React.FC = () => {
 
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
+  // Show loading spinner while checking localStorage
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-indigo-200 dark:border-indigo-900 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Loading CampusTrade...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show auth page if not logged in
   if (!user) {
     return <AuthPage onLogin={handleLogin} />;
   }
@@ -391,7 +440,15 @@ const App: React.FC = () => {
                       <p className="text-[10px] text-gray-400">{user.university}</p>
                     </div>
                  </div>
-                 
+
+                 <button 
+                   onClick={handleLogout}
+                   className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                   title="Logout"
+                 >
+                   <LogOut className="w-5 h-5" />
+                 </button>
+                  
                  <Button 
                   onClick={handleAddListingClick} 
                   size="sm" 
@@ -662,6 +719,7 @@ const App: React.FC = () => {
         isOpen={isKYCModalOpen}
         onClose={() => setIsKYCModalOpen(false)}
         onVerify={handleVerifyKYC}
+        user={user}
       />
 
       <ProductDetailsModal

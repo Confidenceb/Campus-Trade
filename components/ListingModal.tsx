@@ -81,7 +81,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
     onClose();
   };
 
-  const inputBaseClass = "w-full rounded-lg border-gray-300 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white text-gray-900 placeholder-gray-400 transition-shadow";
+  const inputBaseClass = "w-full rounded-lg border-gray-300 dark:border-gray-600 border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-shadow";
 
   // Tabs configuration
   const tabs = [
@@ -92,10 +92,10 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">List Item on Unilag Market</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl my-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">List Item on Unilag Market</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -105,7 +105,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
           {/* Type Selection */}
           <div className="grid grid-cols-3 gap-4">
             {tabs.map((tab) => (
-              <label key={tab.id} className={`cursor-pointer border rounded-lg p-3 text-center transition-all ${formData.type === tab.id ? 'bg-indigo-50 border-indigo-500 text-indigo-700 font-semibold shadow-sm ring-1 ring-indigo-500' : 'hover:bg-gray-50 text-gray-600 border-gray-200 bg-white'}`}>
+              <label key={tab.id} className={`cursor-pointer border rounded-lg p-3 text-center transition-all ${formData.type === tab.id ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-500 dark:border-indigo-400 text-indigo-700 dark:text-indigo-300 font-semibold shadow-sm ring-1 ring-indigo-500' : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 dark:text-gray-300 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800'}`}>
                 <input 
                   type="radio" 
                   name="type" 
@@ -122,7 +122,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
           {/* Core Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Item Title *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item Title *</label>
               <input
                 type="text"
                 name="title"
@@ -134,7 +134,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
               <select
                 name="category"
                 value={formData.category}
@@ -146,7 +146,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
             </div>
 
             <div>
-               <label className="block text-sm font-medium text-gray-700 mb-1">Condition *</label>
+               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Condition *</label>
                <select
                 name="condition"
                 value={formData.condition}
@@ -161,24 +161,24 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
             <div>
               {formData.type === ListingType.BUY && (
                 <>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price (₦) *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (₦) *</label>
                   <input type="number" name="price" value={formData.price} onChange={handleChange} className={inputBaseClass} />
                 </>
               )}
               {formData.type === ListingType.SWAP && (
                 <>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">What do you want? *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">What do you want? *</label>
                   <input type="text" name="swapRequest" placeholder="e.g. iPhone 7" value={formData.swapRequest} onChange={handleChange} className={inputBaseClass} />
                 </>
               )}
               {formData.type === ListingType.RENT && (
                 <div className="flex gap-2">
                    <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Rate (₦) *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate (₦) *</label>
                     <input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleChange} className={inputBaseClass} />
                    </div>
                    <div className="w-1/3">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Per</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Per</label>
                     <select name="rentDuration" value={formData.rentDuration} onChange={handleChange} className={inputBaseClass}>
                       <option value="day">Day</option>
                       <option value="week">Week</option>
@@ -192,7 +192,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
 
           {/* Description with AI */}
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Description *
               <span className="ml-2 text-xs text-gray-500 font-normal">Be detailed about the item.</span>
             </label>
@@ -222,15 +222,15 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
           </div>
 
           {/* Seller Info */}
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900">Contact Details</h3>
+          <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Contact Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name *</label>
                 <input type="text" name="sellerName" value={formData.sellerName} onChange={handleChange} className={inputBaseClass} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number *</label>
                 <input type="text" name="contactInfo" placeholder="For system verification only" value={formData.contactInfo} onChange={handleChange} className={inputBaseClass} />
                 <p className="text-[10px] text-gray-500 mt-1">Your phone number will NOT be shown publicly. It is for admin use only.</p>
               </div>
@@ -238,11 +238,11 @@ export const ListingModal: React.FC<ListingModalProps> = ({ isOpen, onClose, onS
           </div>
 
           {/* Image Upload Mock */}
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white">
              <input type="file" className="hidden" id="img-upload" />
              <label htmlFor="img-upload" className="cursor-pointer">
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">Click to upload an image (Optional)</p>
+                <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">Click to upload an image (Optional)</p>
                 <p className="text-xs text-gray-400 mt-1">SVG, PNG, JPG (Max 5MB)</p>
              </label>
           </div>
