@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, User, MapPin, Shield, MessageCircle, CheckCircle, AlertCircle, ChevronRight, Heart, Flag, AlertTriangle, Star, Lock, Share2, Copy } from 'lucide-react';
+import { X, User, MapPin, Shield, MessageCircle, CheckCircle, AlertCircle, ChevronRight, Heart, Flag, AlertTriangle, Star, Lock, Share2, Copy, Moon, Sun } from 'lucide-react';
 import { Listing, ListingType, User as UserType } from '../types';
 import { Button } from './Button';
 
@@ -14,7 +14,9 @@ interface ProductDetailsModalProps {
   onToggleSave?: (id: string) => void;
   onReport?: (id: string) => void;
   onChat?: (listing: Listing) => void;
-  canClose?: boolean; 
+  canClose?: boolean;
+  isDarkMode?: boolean;
+  toggleTheme?: () => void;
 }
 
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ 
@@ -27,7 +29,9 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   onToggleSave,
   onReport,
   onChat,
-  canClose = true
+  canClose = true,
+  isDarkMode,
+  toggleTheme
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -102,6 +106,17 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
             <X className="w-6 h-6" />
           </button>
 
+          {/* Theme Toggle - Mobile */}
+          {toggleTheme && (
+            <button 
+              onClick={toggleTheme}
+              className="absolute top-4 right-4 p-2 bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white rounded-full hover:bg-white dark:hover:bg-gray-700 shadow-lg md:hidden z-50 focus:outline-none active:scale-95 transition-transform"
+              aria-label="Toggle theme"
+            >
+              {isDarkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-600" />}
+            </button>
+          )}
+
           {/* Main Image */}
           <div className="flex-grow relative h-0">
              <img 
@@ -140,6 +155,15 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
           
           {/* Header Actions - Desktop */}
           <div className="hidden md:flex items-center justify-end gap-2 p-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-20">
+            {toggleTheme && (
+              <button 
+                  onClick={toggleTheme}
+                  className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 dark:text-gray-500 dark:hover:text-indigo-400 rounded-full transition-colors"
+                  title="Toggle Theme"
+              >
+                  {isDarkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-600" />}
+              </button>
+            )}
             <button 
                 onClick={handleShare}
                 className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 dark:text-gray-500 dark:hover:text-indigo-400 rounded-full transition-colors"

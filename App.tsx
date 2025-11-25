@@ -675,6 +675,8 @@ const App: React.FC = () => {
         onReport={handleReportListing}
         onChat={handleStartChat}
         canClose={!isKYCModalOpen}
+        isDarkMode={isDarkMode}
+        toggleTheme={toggleDarkMode}
       />
 
       <DashboardModal
