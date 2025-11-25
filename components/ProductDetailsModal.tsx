@@ -88,11 +88,11 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm overflow-hidden" onClick={() => canClose && onClose()}>
-      {/* Mobile: Full Screen, Desktop: Centered Modal */}
-      <div className="bg-white dark:bg-gray-800 md:rounded-2xl shadow-2xl w-full h-full md:h-auto md:max-h-[90vh] md:max-w-5xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-200 overflow-hidden" onClick={e => e.stopPropagation()}>
+      {/* Mobile: Full Screen using dvh to handle mobile browser bars, Desktop: Centered Modal */}
+      <div className="bg-white dark:bg-gray-800 md:rounded-2xl shadow-2xl w-full h-[100dvh] md:h-auto md:max-h-[90vh] md:max-w-5xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-200 overflow-hidden" onClick={e => e.stopPropagation()}>
         
         {/* Image Side (Gallery) */}
-        <div className="w-full md:w-1/2 bg-gray-900 relative group h-64 shrink-0 md:h-auto flex flex-col">
+        <div className="w-full md:w-1/2 bg-gray-900 relative group h-[40dvh] shrink-0 md:h-auto flex flex-col">
           {/* Close Button - Mobile */}
           <button 
             onClick={onClose}
@@ -107,7 +107,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
              <img 
                 src={images[activeImageIndex]} 
                 alt={listing.title} 
-                className="absolute inset-0 w-full h-full object-contain md:object-cover bg-black"
+                className="absolute inset-0 w-full h-full object-cover md:object-cover bg-black"
              />
              <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end z-10 pointer-events-none">
                  <div className="flex gap-2">
@@ -164,7 +164,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
             </button>
           </div>
 
-          <div className="p-6 md:p-8 flex-grow overflow-y-auto custom-scrollbar pt-4 bg-white dark:bg-gray-800">
+          <div className="p-6 md:p-8 flex-grow overflow-y-auto custom-scrollbar pt-4 bg-white dark:bg-gray-800 pb-32 md:pb-6">
              {/* Mobile Actions (Top Right of content) */}
              <div className="md:hidden flex justify-end gap-2 mb-2">
                  <button onClick={handleShare} className="p-2 bg-gray-50 dark:bg-gray-700 text-gray-500 rounded-full">
@@ -262,15 +262,15 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 md:p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 pb-8 md:pb-6 sticky bottom-0 z-20">
+          <div className="p-4 md:p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/95 dark:bg-gray-800/95 backdrop-blur-md absolute bottom-0 left-0 right-0 z-30 shadow-lg md:shadow-none md:relative">
              <div className="flex flex-col gap-3">
                  <div className="flex gap-3">
-                    <Button onClick={handleChatClick} variant="outline" className="flex-1 border-gray-300 dark:border-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-indigo-300 hover:text-indigo-600">
+                    <Button onClick={handleChatClick} variant="outline" className="flex-1 border-gray-300 dark:border-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-indigo-300 hover:text-indigo-600 py-3">
                         <MessageCircle className="w-5 h-5 mr-2" />
                         Chat
                     </Button>
                     
-                    <Button onClick={handleSecurePay} className="flex-1 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none">
+                    <Button onClick={handleSecurePay} className="flex-1 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none py-3">
                         <Lock className="w-5 h-5 mr-2" />
                         {listing.type === ListingType.BUY ? 'Buy Now' : 'Make Offer'}
                     </Button>

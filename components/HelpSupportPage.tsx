@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronUp, ShieldCheck, Mail, MessageCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, ShieldCheck, Mail, MessageCircle, AlertTriangle, Moon, Sun } from 'lucide-react';
 import { Button } from './Button';
 import { FAQS } from '../constants';
 
 interface HelpSupportPageProps {
   onBack: () => void;
+  isDarkMode?: boolean;
+  toggleTheme?: () => void;
 }
 
-export const HelpSupportPage: React.FC<HelpSupportPageProps> = ({ onBack }) => {
+export const HelpSupportPage: React.FC<HelpSupportPageProps> = ({ onBack, isDarkMode, toggleTheme }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const toggleFaq = (index: number) => {
@@ -18,11 +20,18 @@ export const HelpSupportPage: React.FC<HelpSupportPageProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 sticky top-0 z-30 flex items-center">
-         <Button variant="ghost" size="sm" onClick={onBack} className="mr-4 dark:text-gray-300 dark:hover:bg-gray-700">
-            <ArrowLeft className="w-5 h-5 mr-1" /> Back
-         </Button>
-         <h1 className="text-xl font-bold">Help & Support</h1>
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 sticky top-0 z-30 flex items-center justify-between">
+         <div className="flex items-center">
+             <Button variant="ghost" size="sm" onClick={onBack} className="mr-4 dark:text-gray-300 dark:hover:bg-gray-700">
+                <ArrowLeft className="w-5 h-5 mr-1" /> Back
+             </Button>
+             <h1 className="text-xl font-bold">Help & Support</h1>
+         </div>
+         {toggleTheme && (
+            <button onClick={toggleTheme} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                {isDarkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />}
+            </button>
+         )}
       </div>
 
       <div className="max-w-3xl mx-auto w-full p-4 md:p-8 space-y-8">

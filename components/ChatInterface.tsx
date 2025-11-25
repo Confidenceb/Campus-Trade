@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, ShieldAlert, Info, ArrowLeft, Search, MoreVertical, CheckCheck, Loader2 } from 'lucide-react';
+import { Send, ShieldAlert, Info, ArrowLeft, Search, MoreVertical, CheckCheck, Loader2, Moon, Sun } from 'lucide-react';
 import { Conversation, Message, User } from '../types';
 import { Button } from './Button';
 import { analyzeMessageSafety } from '../services/gemini';
@@ -10,13 +10,17 @@ interface ChatInterfaceProps {
   conversations: Conversation[];
   activeConversationId?: string | null;
   onBackToHome: () => void;
+  isDarkMode?: boolean;
+  toggleTheme?: () => void;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   currentUser,
   conversations: initialConversations,
   activeConversationId,
-  onBackToHome
+  onBackToHome,
+  isDarkMode,
+  toggleTheme
 }) => {
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(activeConversationId || null);
@@ -108,9 +112,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </Button>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden md:block">Messages</h1>
         </div>
-        <div className="flex items-center text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full font-medium">
-             <ShieldAlert className="w-4 h-4 mr-2" />
-             AI Chat Monitoring Active
+        
+        <div className="flex items-center gap-3">
+             <div className="flex items-center text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full font-medium">
+                <ShieldAlert className="w-4 h-4 mr-2" />
+                AI Monitoring Active
+             </div>
+             {toggleTheme && (
+                <button onClick={toggleTheme} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    {isDarkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />}
+                </button>
+             )}
         </div>
       </div>
 

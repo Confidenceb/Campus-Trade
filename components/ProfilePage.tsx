@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, User, BookOpen, Hash, Building2, Phone, Mail, Edit2, Save, Star, ThumbsUp, MapPin, Camera, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, User, BookOpen, Hash, Building2, Phone, Mail, Edit2, Save, Star, ThumbsUp, MapPin, Camera, ShieldCheck, Sun, Moon } from 'lucide-react';
 import { User as UserType } from '../types';
 import { Button } from './Button';
 
@@ -10,6 +10,8 @@ interface ProfilePageProps {
   onBack: () => void;
   onSave?: (updatedUser: UserType) => void;
   onVerify?: () => void;
+  isDarkMode?: boolean;
+  toggleTheme?: () => void;
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({ 
@@ -17,7 +19,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   isEditable = false, 
   onBack,
   onSave,
-  onVerify
+  onVerify,
+  isDarkMode,
+  toggleTheme
 }) => {
   const [formData, setFormData] = useState<UserType>(user);
   const [isEditing, setIsEditing] = useState(false);
@@ -63,11 +67,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 flex flex-col">
        {/* Mobile Header */}
-       <div className="md:hidden bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700 flex items-center sticky top-0 z-30">
-          <Button variant="ghost" size="sm" onClick={onBack} className="mr-2 dark:text-gray-200">
-             <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="font-bold text-lg text-gray-900 dark:text-white">Profile</h1>
+       <div className="md:hidden bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center">
+             <Button variant="ghost" size="sm" onClick={onBack} className="mr-2 dark:text-gray-200">
+                <ArrowLeft className="w-5 h-5" />
+             </Button>
+             <h1 className="font-bold text-lg text-gray-900 dark:text-white">Profile</h1>
+          </div>
+          {toggleTheme && (
+            <button onClick={toggleTheme} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                {isDarkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />}
+            </button>
+          )}
        </div>
 
        <div className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8 flex flex-col md:flex-row gap-8">
@@ -75,10 +86,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Sidebar / Left Panel */}
           <div className="w-full md:w-80 shrink-0 space-y-6">
              {/* Desktop Back Button */}
-             <div className="hidden md:block">
-                <Button variant="ghost" onClick={onBack} className="mb-4 pl-0 hover:bg-transparent dark:text-gray-300 dark:hover:text-white">
+             <div className="hidden md:flex justify-between items-center">
+                <Button variant="ghost" onClick={onBack} className="pl-0 hover:bg-transparent dark:text-gray-300 dark:hover:text-white">
                    <ArrowLeft className="w-5 h-5 mr-2" /> Back to Dashboard
                 </Button>
+                {toggleTheme && (
+                    <button onClick={toggleTheme} className="p-2 text-gray-500 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-colors">
+                        {isDarkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />}
+                    </button>
+                )}
              </div>
 
              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden p-6 text-center relative">

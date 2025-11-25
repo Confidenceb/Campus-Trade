@@ -262,6 +262,8 @@ const App: React.FC = () => {
               conversations={conversations}
               activeConversationId={targetConversationId}
               onBackToHome={() => setCurrentView('HOME')}
+              isDarkMode={isDarkMode}
+              toggleTheme={toggleDarkMode}
           />
       );
     }
@@ -274,12 +276,20 @@ const App: React.FC = () => {
               onBack={() => setCurrentView('HOME')}
               onSave={handleUpdateProfile}
               onVerify={handleVerifyNeeded}
+              isDarkMode={isDarkMode}
+              toggleTheme={toggleDarkMode}
           />
       );
     }
 
     if (currentView === 'HELP') {
-        return <HelpSupportPage onBack={() => setCurrentView('HOME')} />;
+        return (
+          <HelpSupportPage 
+            onBack={() => setCurrentView('HOME')} 
+            isDarkMode={isDarkMode}
+            toggleTheme={toggleDarkMode}
+          />
+        );
     }
 
     // HOME VIEW
@@ -395,7 +405,7 @@ const App: React.FC = () => {
         </nav>
         
         {/* Mobile Search Bar */}
-        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex gap-2">
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex gap-2 sticky top-16 z-30">
             <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400" />
@@ -541,41 +551,37 @@ const App: React.FC = () => {
 
           {/* Tabs */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl overflow-x-auto max-w-full">
                <button 
                   onClick={() => setActiveTab('ALL')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'ALL' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'ALL' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                >
                  All
                </button>
                <button 
                   onClick={() => setActiveTab(ListingType.BUY)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === ListingType.BUY ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === ListingType.BUY ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                >
                  Buy
                </button>
                <button 
                   onClick={() => setActiveTab(ListingType.SWAP)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === ListingType.SWAP ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === ListingType.SWAP ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                >
                  Swap
                </button>
                <button 
                   onClick={() => setActiveTab(ListingType.RENT)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === ListingType.RENT ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === ListingType.RENT ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                >
                  Rent
                </button>
             </div>
-            
-            <button className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-              <SlidersHorizontal className="w-4 h-4 mr-1" /> Filter
-            </button>
           </div>
 
           {/* Listings Grid */}
           {filteredListings.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {filteredListings.map((listing) => (
                 <ListingCard 
                   key={listing.id} 
